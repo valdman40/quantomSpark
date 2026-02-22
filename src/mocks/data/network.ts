@@ -1,0 +1,77 @@
+import type { NetworkInterface, StaticRoute, DnsSettings } from '../../types/network';
+
+export const mockInterfaces: NetworkInterface[] = [
+  {
+    id: 'if-1',
+    name: 'eth0',
+    type: 'ethernet',
+    ipAddress: '203.0.113.5',
+    subnetMask: '255.255.255.0',
+    gateway: '203.0.113.1',
+    status: 'up',
+    speedMbps: 1000,
+    macAddress: '00:1A:4B:C8:10:01',
+    mtu: 1500,
+    zone: 'external',
+    dhcp: false,
+    comment: 'WAN / ISP uplink',
+  },
+  {
+    id: 'if-2',
+    name: 'eth1',
+    type: 'ethernet',
+    ipAddress: '192.168.1.1',
+    subnetMask: '255.255.255.0',
+    status: 'up',
+    speedMbps: 1000,
+    macAddress: '00:1A:4B:C8:10:02',
+    mtu: 1500,
+    zone: 'internal',
+    dhcp: false,
+    comment: 'LAN',
+  },
+  {
+    id: 'if-3',
+    name: 'eth2',
+    type: 'ethernet',
+    ipAddress: '172.16.10.1',
+    subnetMask: '255.255.255.0',
+    status: 'up',
+    speedMbps: 1000,
+    macAddress: '00:1A:4B:C8:10:03',
+    mtu: 1500,
+    zone: 'dmz',
+    dhcp: false,
+    comment: 'DMZ segment',
+  },
+  {
+    id: 'if-4',
+    name: 'eth3',
+    type: 'ethernet',
+    ipAddress: '',
+    subnetMask: '',
+    status: 'down',
+    speedMbps: 0,
+    macAddress: '00:1A:4B:C8:10:04',
+    mtu: 1500,
+    zone: 'none',
+    dhcp: false,
+    comment: 'Unused',
+  },
+];
+
+export const mockRoutes: StaticRoute[] = [
+  { id: 'r-1', destination: '0.0.0.0',       mask: '0.0.0.0',         gateway: '203.0.113.1', interface: 'eth0', metric: 1,   type: 'static',    comment: 'Default route'   },
+  { id: 'r-2', destination: '10.0.0.0',       mask: '255.0.0.0',       gateway: '192.168.1.254', interface: 'eth1', metric: 10, type: 'static',   comment: 'Private ranges'  },
+  { id: 'r-3', destination: '192.168.1.0',    mask: '255.255.255.0',   gateway: '0.0.0.0',     interface: 'eth1', metric: 1,   type: 'connected', comment: 'LAN subnet'      },
+  { id: 'r-4', destination: '172.16.10.0',    mask: '255.255.255.0',   gateway: '0.0.0.0',     interface: 'eth2', metric: 1,   type: 'connected', comment: 'DMZ subnet'      },
+];
+
+export const mockDns: DnsSettings = {
+  primaryDns: '8.8.8.8',
+  secondaryDns: '8.8.4.4',
+  tertiaryDns: '1.1.1.1',
+  domainSuffix: 'corp.local',
+  localDomains: ['corp.local', 'internal.corp'],
+  enableCache: true,
+};
