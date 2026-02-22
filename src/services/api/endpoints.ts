@@ -1,9 +1,16 @@
 /** Single source of truth for every API path.
  *  Import from here — never hardcode paths in components or hooks. */
 export const ENDPOINTS = {
-  // Dashboard
-  dashboard: {
-    summary: '/dashboard/summary',
+  // Home
+  home: {
+    systemOverview:     '/home/system-overview',
+    securityDashboard:  '/home/security-dashboard-data',
+    notifications:      '/home/notifications',
+    notification:       (id: string) => `/home/notifications/${id}`,
+    notificationsClear: '/home/notifications/clear',
+    assets:             '/home/assets',
+    bladeCategories:    '/home/blade-categories',
+    toggleBlade:        (id: string) => `/home/blade-categories/toggle/${id}`,
   },
 
   // Network

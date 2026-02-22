@@ -1,11 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { TopBar } from './TopBar';
 import { Sidebar } from './Sidebar';
+import { StatusBar } from './StatusBar';
+import { Footer } from './Footer';
 import { NotificationList } from '../common/NotificationList';
 
 /**
  * Root layout shell.
- * TopBar is fixed at the top; below it the sidebar and the <Outlet> share the remaining height.
+ * TopBar fixed at top → sidebar + content in app-body → StatusBar → Footer
  */
 export function AppShell() {
   return (
@@ -17,6 +19,8 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <StatusBar />
+      <Footer />
       <NotificationList />
     </div>
   );

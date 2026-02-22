@@ -1,70 +1,90 @@
+import { useState } from 'react';
+import {
+  Menu, Search, Mail, Network, Settings, User,
+} from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { toggleSidebar } from '../../app/uiSlice';
-import { StatusDot } from '../common/StatusDot';
+import { toggleSidebar, toggleMobileSidebar } from '../../app/uiSlice';
+import { CheckPointLogo } from '../../assets/CheckPointLogo';
 
 export function TopBar() {
   const dispatch = useAppDispatch();
   const collapsed = useAppSelector(s => s.ui.sidebarCollapsed);
+  const [search, setSearch] = useState('');
 
   return (
     <header className="topbar">
+      {/* Left: hamburger + brand */}
       <div className="topbar-left">
-        {/* Hamburger */}
-        <button className="hamburger-btn" onClick={() => dispatch(toggleSidebar())} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-          <HamburgerIcon />
+        <button
+          className="topbar-icon-btn hamburger-btn"
+          onClick={() => {
+            // On mobile toggle the overlay; on desktop toggle collapse
+            if (window.innerWidth <= 768) {
+              dispatch(toggleMobileSidebar());
+            } else {
+              dispatch(toggleSidebar());
+            }
+          }}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label="Toggle navigation"
+        >
+          <Menu size={18} />
         </button>
 
-        <div className="topbar-divider" />
-
-        {/* Device */}
+        {/* Quantum Spark brand mark */}
         <div className="topbar-brand">
-          <div className="topbar-logo">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <div>
-            <div className="topbar-device-name">QS-1500W-Primary</div>
-            <div className="topbar-model">Quantum Spark 1500W · R81.20.10</div>
-          </div>
+          {/* Orange spark/flame icon */}
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="16" fill="#f97316" />
+            <path
+              d="M16 6 C16 6 22 12 20 17 C20 17 18 14 14 15 C14 15 18 18 16 26 C16 26 9 20 11 14 C11 14 13 17 15 16 C15 16 12 11 16 6Z"
+              fill="#fff"
+            />
+          </svg>
+          <span className="topbar-brand-name">Quantum Spark</span>
+        </div>
+
+        {/* Device chip */}
+        <div className="topbar-device-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="7" width="20" height="10" rx="2"/>
+            <circle cx="7" cy="12" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="11" cy="12" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          <span>Gateway-ID-569EFED1</span>
         </div>
       </div>
 
+      {/* Center: global search */}
+      <div className="topbar-search">
+        <Search size={14} className="topbar-search-icon" />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          aria-label="Global search"
+        />
+      </div>
+
+      {/* Right: action icons + CP logo */}
       <div className="topbar-right">
-        {/* System status */}
-        <div className="topbar-status-row">
-          <StatusDot color="green" label="Threat Prevention" />
-          <div className="topbar-divider" />
-          <StatusDot color="green" label="HA Active" />
-        </div>
+        <button className="topbar-icon-btn" title="Notifications">
+          <Mail size={16} />
+        </button>
+        <button className="topbar-icon-btn" title="Connections">
+          <Network size={16} />
+        </button>
+        <button className="topbar-icon-btn" title="Settings">
+          <Settings size={16} />
+        </button>
+        <button className="topbar-icon-btn" title="Account">
+          <User size={16} />
+        </button>
 
         <div className="topbar-divider" />
-
-        {/* Admin */}
-        <div className="topbar-user">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
-          <span>admin</span>
-        </div>
-
-        {/* Help */}
-        <button className="topbar-icon-btn" title="Help">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </button>
+        <CheckPointLogo variant="light" size={20} />
       </div>
     </header>
-  );
-}
-
-function HamburgerIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="3" y1="6"  x2="21" y2="6"/>
-      <line x1="3" y1="12" x2="21" y2="12"/>
-      <line x1="3" y1="18" x2="21" y2="18"/>
-    </svg>
   );
 }

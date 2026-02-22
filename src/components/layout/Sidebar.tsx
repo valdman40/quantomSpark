@@ -1,198 +1,211 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import {
+  Home, Server, Shield, ShieldAlert, Globe, Users, FileText,
+  FlaskConical, ChevronRight, Search, ChevronsLeft, X,
+} from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { toggleSidebar } from '../../app/uiSlice';
+import { closeMobileSidebar } from '../../app/uiSlice';
 import { NAV_CONFIG } from '../../router/navConfig';
 
-// ─── Section icon map ────────────────────────────────────────────
+// ─── Section icon map (Lucide) ────────────────────────────────────
 function SectionIcon({ name }: { name: string }) {
+  const props = { size: 16, strokeWidth: 1.8 };
   switch (name) {
-    case 'home':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9,22 9,12 15,12 15,22"/>
-        </svg>
-      );
-    case 'gateway-device':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="2" y="7" width="20" height="10" rx="2"/>
-          <circle cx="7" cy="12" r="1.2" fill="currentColor"/>
-          <circle cx="11" cy="12" r="1.2" fill="currentColor"/>
-          <line x1="17" y1="10" x2="17" y2="14"/>
-          <line x1="19" y1="12" x2="15" y2="12"/>
-        </svg>
-      );
-    case 'firewall':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <line x1="9" y1="12" x2="15" y2="12"/>
-          <line x1="12" y1="9" x2="12" y2="15"/>
-        </svg>
-      );
-    case 'threat-prevention':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <line x1="12" y1="8" x2="12" y2="13"/>
-          <circle cx="12" cy="16" r="0.8" fill="currentColor" stroke="none"/>
-        </svg>
-      );
-    case 'site-to-site-vpn':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M3.6 9h16.8M3.6 15h16.8"/>
-          <path d="M12 3a12 12 0 010 18M12 3a12 12 0 000 18"/>
-        </svg>
-      );
-    case 'asset-management':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-        </svg>
-      );
-    case 'logs':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14,2 14,8 20,8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-      );
-    case 'test':
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
-        </svg>
-      );
-    default:
-      return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-        </svg>
-      );
+    case 'home':             return <Home {...props} />;
+    case 'gateway-device':   return <Server {...props} />;
+    case 'firewall':         return <Shield {...props} />;
+    case 'threat-prevention':return <ShieldAlert {...props} />;
+    case 'site-to-site-vpn': return <Globe {...props} />;
+    case 'asset-management': return <Users {...props} />;
+    case 'logs':             return <FileText {...props} />;
+    case 'test':             return <FlaskConical {...props} />;
+    default:                 return <Home {...props} />;
   }
 }
 
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      className={`nav-chevron${open ? ' open' : ''}`}
-      width="12" height="12" viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="2"
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
-}
-
-// ─── Sidebar component ───────────────────────────────────────────
+// ─── Sidebar component ────────────────────────────────────────────
 export function Sidebar() {
-  const collapsed = useAppSelector(s => s.ui.sidebarCollapsed);
-  const dispatch  = useAppDispatch();
-  const location  = useLocation();
+  const collapsed       = useAppSelector(s => s.ui.sidebarCollapsed);
+  const mobileOpen      = useAppSelector(s => s.ui.mobileSidebarOpen);
+  const dispatch        = useAppDispatch();
+  const location        = useLocation();
 
-  // Auto-open the section that contains the current path
-  const findActiveSection = (): string | null => {
+  const [search, setSearch]           = useState('');
+  const [openSection, setOpenSection] = useState<string | null>(() => {
     for (const section of NAV_CONFIG) {
-      for (const group of section.groups) {
-        if (group.items.some(item => location.pathname.startsWith(item.path))) {
-          return section.label;
-        }
+      if (section.groups.some(g => g.items.some(i => location.pathname.startsWith(i.path)))) {
+        return section.label;
       }
     }
     return NAV_CONFIG[0]?.label ?? null;
-  };
+  });
 
-  const [openSection, setOpenSection] = useState<string | null>(findActiveSection);
-
-  const handleTopLevelClick = (sectionLabel: string) => {
-    if (collapsed) {
-      // Expand sidebar first, then open the section
-      dispatch(toggleSidebar());
-      setOpenSection(sectionLabel);
-    } else {
-      setOpenSection(prev => (prev === sectionLabel ? null : sectionLabel));
+  // ─── Filtered nav for search ──────────────────────────────────
+  const filteredConfig = useMemo(() => {
+    if (!search.trim()) return null; // null = show full accordion
+    const q = search.toLowerCase();
+    const results: { sectionLabel: string; groupLabel: string; label: string; path: string }[] = [];
+    for (const section of NAV_CONFIG) {
+      for (const group of section.groups) {
+        for (const item of group.items) {
+          if (
+            item.label.toLowerCase().includes(q) ||
+            section.label.toLowerCase().includes(q) ||
+            group.label.toLowerCase().includes(q)
+          ) {
+            results.push({
+              sectionLabel: section.label,
+              groupLabel: group.label,
+              label: item.label,
+              path: item.path,
+            });
+          }
+        }
+      }
     }
-  };
+    return results;
+  }, [search]);
+
+  const sidebarClass = [
+    'sidebar',
+    collapsed    ? 'collapsed'    : '',
+    mobileOpen   ? 'mobile-open'  : '',
+  ].filter(Boolean).join(' ');
 
   return (
-    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
-      {/* Logo */}
-      <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-        </div>
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => dispatch(closeMobileSidebar())}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={sidebarClass} aria-label="Main navigation">
+        {/* Search box */}
         {!collapsed && (
-          <div>
-            <div className="sidebar-logo-text">QUANTUM SPARK</div>
-            <div className="sidebar-logo-sub">1500W</div>
+          <div className="nav-search">
+            <Search size={13} className="nav-search-icon" />
+            <input
+              type="text"
+              placeholder="Search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              aria-label="Filter navigation"
+            />
+            {search && (
+              <button className="nav-search-clear" onClick={() => setSearch('')} aria-label="Clear search">
+                <X size={12} />
+              </button>
+            )}
           </div>
         )}
-      </div>
 
-      {/* Navigation */}
-      <nav className="sidebar-nav">
-        {NAV_CONFIG.map(section => {
-          const isOpen = openSection === section.label;
-          const hasActive = section.groups.some(g =>
-            g.items.some(item => location.pathname.startsWith(item.path))
-          );
-
-          return (
-            <div key={section.label} className="nav-toplevel">
-              {/* Top-level clickable row */}
-              <div
-                className={[
-                  'nav-toplevel-btn',
-                  isOpen      ? 'open'       : '',
-                  hasActive   ? 'has-active' : '',
-                ].filter(Boolean).join(' ')}
-                onClick={() => handleTopLevelClick(section.label)}
-                title={collapsed ? section.label : undefined}
-                role="button"
-                aria-expanded={isOpen}
-              >
-                <span className="nav-icon">
-                  <SectionIcon name={section.icon} />
-                </span>
-                <span className="nav-label">{section.label}</span>
-                <ChevronIcon open={isOpen} />
+        {/* Nav content */}
+        <nav className="sidebar-nav">
+          {/* ── SEARCH RESULTS MODE ── */}
+          {filteredConfig !== null ? (
+            filteredConfig.length === 0 ? (
+              <div style={{ padding: '16px 14px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                No results for "{search}"
               </div>
+            ) : (
+              filteredConfig.map(item => (
+                <div key={item.path}>
+                  <div className="nav-search-result-section">
+                    {item.sectionLabel} › {item.groupLabel}
+                  </div>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) => `nav-leaf${isActive ? ' active' : ''}`}
+                    onClick={() => dispatch(closeMobileSidebar())}
+                  >
+                    {item.label}
+                  </NavLink>
+                </div>
+              ))
+            )
+          ) : (
+            /* ── ACCORDION MODE ── */
+            NAV_CONFIG.map(section => {
+              const isOpen   = openSection === section.label;
+              const hasActive = section.groups.some(g =>
+                g.items.some(i => location.pathname.startsWith(i.path))
+              );
 
-              {/* Groups + leaves (only when expanded and not collapsed) */}
-              {isOpen && !collapsed && (
-                <div className="nav-section-body">
-                  {section.groups.map(group => (
-                    <div key={group.label} className="nav-group">
-                      <div className="nav-group-header">{group.label}</div>
-                      {group.items.map(item => (
-                        <NavLink
-                          key={item.path}
-                          to={item.path}
-                          className={({ isActive }) =>
-                            `nav-leaf${isActive ? ' active' : ''}`
-                          }
-                        >
-                          {item.label}
-                        </NavLink>
+              return (
+                <div key={section.label} className="nav-toplevel">
+                  <div
+                    className={[
+                      'nav-toplevel-btn',
+                      isOpen     ? 'open'       : '',
+                      hasActive  ? 'has-active' : '',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => {
+                      if (collapsed) return; // collapsed mode: click does nothing (icons only)
+                      setOpenSection(prev => prev === section.label ? null : section.label);
+                    }}
+                    title={collapsed ? section.label : undefined}
+                    role="button"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="nav-icon">
+                      <SectionIcon name={section.icon} />
+                    </span>
+                    {!collapsed && (
+                      <>
+                        <span className="nav-label">{section.label}</span>
+                        <ChevronRight
+                          size={13}
+                          className={`nav-chevron${isOpen ? ' open' : ''}`}
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  {isOpen && !collapsed && (
+                    <div className="nav-section-body">
+                      {section.groups.map(group => (
+                        <div key={group.label} className="nav-group">
+                          <div className="nav-group-header">{group.label}</div>
+                          {group.items.map(item => (
+                            <NavLink
+                              key={item.path}
+                              to={item.path}
+                              className={({ isActive }) => `nav-leaf${isActive ? ' active' : ''}`}
+                              onClick={() => dispatch(closeMobileSidebar())}
+                            >
+                              {item.label}
+                            </NavLink>
+                          ))}
+                        </div>
                       ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </nav>
-    </aside>
+              );
+            })
+          )}
+        </nav>
+
+        {/* Collapse toggle (desktop only) */}
+        {!collapsed && (
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => {
+              setOpenSection(null);
+              dispatch({ type: 'ui/toggleSidebar' });
+            }}
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
+          >
+            <ChevronsLeft size={14} />
+          </button>
+        )}
+      </aside>
+    </>
   );
 }

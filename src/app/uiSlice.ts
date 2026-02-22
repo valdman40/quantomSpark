@@ -8,11 +8,13 @@ export interface Notification {
 
 interface UIState {
   sidebarCollapsed: boolean;
+  mobileSidebarOpen: boolean;
   notifications: Notification[];
 }
 
 const initialState: UIState = {
   sidebarCollapsed: false,
+  mobileSidebarOpen: false,
   notifications: [],
 };
 
@@ -23,6 +25,12 @@ export const uiSlice = createSlice({
     toggleSidebar(state) {
       state.sidebarCollapsed = !state.sidebarCollapsed;
     },
+    toggleMobileSidebar(state) {
+      state.mobileSidebarOpen = !state.mobileSidebarOpen;
+    },
+    closeMobileSidebar(state) {
+      state.mobileSidebarOpen = false;
+    },
     addNotification(state, action: PayloadAction<Omit<Notification, 'id'>>) {
       state.notifications.push({ id: crypto.randomUUID(), ...action.payload });
     },
@@ -32,5 +40,11 @@ export const uiSlice = createSlice({
   },
 });
 
-export const { toggleSidebar, addNotification, removeNotification } = uiSlice.actions;
+export const {
+  toggleSidebar,
+  toggleMobileSidebar,
+  closeMobileSidebar,
+  addNotification,
+  removeNotification,
+} = uiSlice.actions;
 export const uiReducer = uiSlice.reducer;

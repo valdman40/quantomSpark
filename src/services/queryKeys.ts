@@ -5,6 +5,14 @@
 import type { LogFilters } from '../types/logs';
 
 export const queryKeys = {
+  home: {
+    systemOverview:    () => ['home', 'system-overview'] as const,
+    securityDashboard: () => ['home', 'security-dashboard'] as const,
+    notifications:     () => ['home', 'notifications'] as const,
+    assets:            () => ['home', 'assets'] as const,
+    bladeCategories:   () => ['home', 'blade-categories'] as const,
+  },
+
   dashboard: {
     all: () => ['dashboard'] as const,
     summary: () => ['dashboard', 'summary'] as const,
