@@ -598,7 +598,118 @@ select.form-control {
                     color: var(--text-secondary); transition: background .15s; }
 .mgmt-mode-btn.active { background: var(--brand); color: #fff; }
 
+/* ─── Gateway 1570 hardware model ────────────────────────────────── */
+.gw-model-wrap { position: relative; }
+
+/* Glowing pulse on "up" port LEDs — applied to SVG <circle> elements */
+.port-led-up {
+  animation: port-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes port-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.85)); opacity: 1;    }
+  50%       { filter: drop-shadow(0 0 9px rgba(34, 197, 94, 1));    opacity: 0.78; }
+}
+
+/* Tooltip card */
+.gw-port-tooltip {
+  background:    #1a2535;
+  border:        1px solid #2d4a6a;
+  border-radius: 7px;
+  padding:       9px 13px;
+  color:         #e2e8f0;
+  font-size:     0.8rem;
+  line-height:   1.5;
+  box-shadow:    0 6px 20px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  white-space:   nowrap;
+  min-width:     190px;
+  backdrop-filter: blur(4px);
+}
+.gw-port-tooltip-title {
+  font-weight:    700;
+  font-size:      0.88rem;
+  margin-bottom:  6px;
+  padding-bottom: 5px;
+  border-bottom:  1px solid #2d4a6a;
+  color:          #ffffff;
+}
+.gw-tt-key {
+  color:         #64748b;
+  padding-right: 12px;
+  padding-bottom: 3px;
+  font-size:     0.78rem;
+  white-space:   nowrap;
+  vertical-align: top;
+}
+
 /* ─── License footer ─────────────────────────────────────────────── */
 .license-footer   { padding: 12px 16px; border-top: 1px solid var(--border); background: #f8fafc;
                     font-size: 0.78rem; color: var(--text-secondary); display: flex;
                     align-items: center; gap: 16px; flex-wrap: wrap; }
+
+/* ─── Local Network ──────────────────────────────────────────────── */
+.localnet-charts     { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.localnet-chart-card { flex: 1; min-width: 160px; background: var(--card-bg);
+                       border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.localnet-chart-title{ font-size: 0.78rem; font-weight: 600; margin-bottom: 10px; }
+.localnet-donut-wrap { display: flex; align-items: center; gap: 12px; }
+.localnet-donut      { width: 60px; height: 60px; border-radius: 50%;
+                       border: 8px solid var(--border); flex-shrink: 0; }
+.localnet-legend     { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.8; }
+.localnet-legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.localnet-toolbar    { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.localnet-count      { margin-left: auto; font-size: 0.75rem; color: var(--text-secondary); }
+
+/* ─── Hotspot ────────────────────────────────────────────────────── */
+.hotspot-alerts      { margin-bottom: 16px; }
+.hotspot-alert-row   { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem;
+                       padding: 5px 0; color: var(--text-secondary); }
+.hotspot-alert-row a { color: var(--brand); text-decoration: none; }
+.hotspot-alert-row a:hover { text-decoration: underline; }
+.hotspot-access      { background: var(--card-bg); border: 1px solid var(--border);
+                       border-radius: var(--radius); padding: 16px; max-width: 560px; }
+.hotspot-radio-group { margin: 6px 0 10px 22px; display: flex; flex-direction: column; gap: 6px;
+                       font-size: 0.82rem; color: var(--text-muted); }
+.hotspot-timeout-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 0.82rem; }
+
+/* ─── MAC Filtering ──────────────────────────────────────────────── */
+.mac-toggle-row   { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+.mac-warning      { display: flex; align-items: center; gap: 6px; font-size: 0.8rem;
+                    color: var(--text-secondary); margin-bottom: 16px; }
+.mac-section      { background: var(--card-bg); border: 1px solid var(--border);
+                    border-radius: var(--radius); max-width: 560px; }
+.mac-section-hdr  { padding: 10px 14px; font-size: 0.82rem; font-weight: 600;
+                    border-bottom: 1px solid var(--border); }
+.mac-toolbar      { display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+                    border-bottom: 1px solid var(--border); }
+.mac-empty        { padding: 14px; text-align: center; font-size: 0.82rem; color: var(--brand); cursor: pointer; }
+
+/* ─── Proxy ──────────────────────────────────────────────────────── */
+.proxy-form       { background: var(--card-bg); border: 1px solid var(--border);
+                    border-radius: var(--radius); padding: 16px; max-width: 480px; }
+.proxy-field-row  { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.82rem; }
+.proxy-field-label{ min-width: 180px; color: var(--text-secondary); }
+
+/* ─── System Operations ──────────────────────────────────────────── */
+.sysop-section      { background: var(--card-bg); border: 1px solid var(--border);
+                      border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; max-width: 700px; }
+.sysop-section-hdr  { display: flex; align-items: center; justify-content: space-between;
+                      padding: 12px 16px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+                      user-select: none; }
+.sysop-section-hdr:hover { background: #f8fafc; }
+.sysop-section-body { padding: 14px 16px; border-top: 1px solid var(--border); }
+.sysop-firmware-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.sysop-firmware-ver { font-size: 0.82rem; color: var(--text-secondary); flex: 1; }
+.sysop-status-row   { display: flex; align-items: center; gap: 6px; font-size: 0.78rem;
+                      color: var(--text-secondary); margin-bottom: 6px; }
+.sysop-status-row a { color: var(--brand); text-decoration: none; }
+.sysop-status-row a:hover { text-decoration: underline; }
+.sysop-action-row   { display: flex; align-items: flex-start; justify-content: space-between;
+                      gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.sysop-action-row:last-child { border-bottom: none; padding-bottom: 0; }
+.sysop-action-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+.sysop-action-desc  { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+.sysop-action-note  { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;
+                      display: flex; align-items: center; gap: 5px; }
+.sysop-action-note a{ color: var(--brand); text-decoration: none; }

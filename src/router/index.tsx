@@ -24,11 +24,15 @@ import { TunnelList }        from '../features/vpn/components/siteToSite/TunnelL
 import { RemoteAccessPanel } from '../features/vpn/components/remoteAccess/RemoteAccessPanel';
 import { Logs }              from '../features/logs/Logs';
 import { AdminList }         from '../features/system/components/admins/AdminList';
-import { UpdatesPanel }      from '../features/system/components/updates/UpdatesPanel';
 import { HaStatus }          from '../features/system/components/ha/HaStatus';
+import { SystemOperations }  from '../features/system/components/systemOperations/SystemOperations';
 import { InterfaceList }     from '../features/network/components/interfaces/InterfaceList';
 import { DnsSettings }       from '../features/network/components/dns/DnsSettings';
 import { RoutingTable }      from '../features/network/components/routing/RoutingTable';
+import { LocalNetwork }      from '../features/network/components/localNetwork/LocalNetwork';
+import { Hotspot }           from '../features/network/components/hotspot/Hotspot';
+import { MacFiltering }      from '../features/network/components/macFiltering/MacFiltering';
+import { Proxy }             from '../features/network/components/proxy/Proxy';
 
 /**
  * Maps an exact nav-config path to its real React component.
@@ -53,10 +57,14 @@ const COMPONENT_MAP: Record<string, React.ReactElement> = {
 
   // Device
   '/device/internet':          <InterfaceList />,
+  '/device/local-network':     <LocalNetwork />,
+  '/device/hotspot':           <Hotspot />,
+  '/device/mac-filtering':     <MacFiltering />,
   '/device/dns':               <DnsSettings />,
+  '/device/proxy':             <Proxy />,
   '/device/routing-table':     <RoutingTable />,
   '/device/administrators':    <AdminList />,
-  '/device/system-operations': <UpdatesPanel />,
+  '/device/system-operations': <SystemOperations />,
   '/device/high-availability': <HaStatus />,
 
   // Access Policy
