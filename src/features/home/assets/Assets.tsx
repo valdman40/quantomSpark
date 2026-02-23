@@ -8,6 +8,7 @@ import { Button } from '../../../components/common/Button';
 import { Badge } from '../../../components/common/Badge';
 import { queryClient } from '../../../app/queryClient';
 import { queryKeys } from '../../../services/queryKeys';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import type { AssetType } from '../../../types/home';
 
 const typeBadgeVariant: Record<AssetType, 'info' | 'success' | 'warning' | 'neutral' | 'error'> = {
@@ -25,11 +26,12 @@ export function Assets() {
   const dispatch   = useAppDispatch();
   const filter     = useAppSelector(s => s.homeAssets.typeFilter);
   const expandedId = useAppSelector(s => s.homeAssets.expandedId);
-  const { data: all, isLoading, error } = useAssets();
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useAssets();
 
-  const assets = all
-    ? (filter === 'all' ? all : all.filter(a => a.type === filter))
-    : [];
+  const allAssets = data?.pages.flatMap(p => p.data) ?? [];
+  const assets = filter === 'all' ? allAssets : allAssets.filter(a => a.type === filter);
+
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   if (isLoading) {
     return <div className="loading-box"><span className="spinner" /><span>Loading assets…</span></div>;
@@ -56,7 +58,8 @@ export function Assets() {
 
       <AssetFilters />
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card">
+        <div className="card-table-scroll">
         <table className="data-table">
           <thead>
             <tr>
@@ -118,6 +121,10 @@ export function Assets() {
             })}
           </tbody>
         </table>
+        <div ref={sentinelRef} className="load-more-sentinel">
+          {isFetchingNextPage && <span className="spinner" />}
+        </div>
+        </div>
       </div>
     </div>
   );

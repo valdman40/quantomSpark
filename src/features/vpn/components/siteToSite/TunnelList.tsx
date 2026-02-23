@@ -6,6 +6,7 @@ import { Button } from '../../../../components/common/Button';
 import { Badge } from '../../../../components/common/Badge';
 import { Modal } from '../../../../components/common/Modal';
 import { TunnelForm } from './TunnelForm';
+import { useInfiniteScroll } from '../../../../hooks/useInfiniteScroll';
 import type { VpnTunnel } from '../../../../types/vpn';
 
 function statusVariant(s: string) {
@@ -24,7 +25,10 @@ function fmtBytes(n: number) {
 export function TunnelList() {
   const dispatch = useAppDispatch();
   const { tunnelModalOpen, connectingTunnelId } = useAppSelector(s => s.vpn);
-  const { data: tunnels = [], isLoading } = useVpnTunnels();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useVpnTunnels();
+
+  const tunnels = data?.pages.flatMap(p => p.data) ?? [];
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   return (
     <div>
@@ -38,61 +42,66 @@ export function TunnelList() {
         <div className="loading-box"><span className="spinner" /></div>
       ) : (
         <div className="card">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Peer IP</th>
-                <th>Peer Name</th>
-                <th>Status</th>
-                <th>IKE</th>
-                <th>Encryption</th>
-                <th>Bytes ↑ / ↓</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tunnels.map((t: VpnTunnel) => {
-                const isConnecting = connectingTunnelId === t.id;
-                return (
-                  <tr key={t.id}>
-                    <td style={{ fontWeight: 600 }}>{t.name}</td>
-                    <td className="mono">{t.peerIp}</td>
-                    <td className="text-muted">{t.peerName ?? '—'}</td>
-                    <td>
-                      <Badge variant={statusVariant(t.status)} dot>
-                        {t.status}
-                      </Badge>
-                    </td>
-                    <td><span className="text-sm">{t.ikeVersion}</span></td>
-                    <td><span className="text-sm">{t.phase1Encryption}</span></td>
-                    <td className="mono text-sm">
-                      {fmtBytes(t.bytesSent)} / {fmtBytes(t.bytesReceived)}
-                    </td>
-                    <td>
-                      <div className="actions">
-                        {t.status === 'connected' ? (
-                          <Button size="sm" variant="secondary" loading={isConnecting}
-                            onClick={() => dispatch({ type: 'vpn/disconnectTunnel', payload: t.id })}>
-                            Disconnect
+          <div className="card-table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Peer IP</th>
+                  <th>Peer Name</th>
+                  <th>Status</th>
+                  <th>IKE</th>
+                  <th>Encryption</th>
+                  <th>Bytes ↑ / ↓</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tunnels.map((t: VpnTunnel) => {
+                  const isConnecting = connectingTunnelId === t.id;
+                  return (
+                    <tr key={t.id}>
+                      <td style={{ fontWeight: 600 }}>{t.name}</td>
+                      <td className="mono">{t.peerIp}</td>
+                      <td className="text-muted">{t.peerName ?? '—'}</td>
+                      <td>
+                        <Badge variant={statusVariant(t.status)} dot>
+                          {t.status}
+                        </Badge>
+                      </td>
+                      <td><span className="text-sm">{t.ikeVersion}</span></td>
+                      <td><span className="text-sm">{t.phase1Encryption}</span></td>
+                      <td className="mono text-sm">
+                        {fmtBytes(t.bytesSent)} / {fmtBytes(t.bytesReceived)}
+                      </td>
+                      <td>
+                        <div className="actions">
+                          {t.status === 'connected' ? (
+                            <Button size="sm" variant="secondary" loading={isConnecting}
+                              onClick={() => dispatch({ type: 'vpn/disconnectTunnel', payload: t.id })}>
+                              Disconnect
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="primary" loading={isConnecting}
+                              onClick={() => dispatch({ type: 'vpn/connectTunnel', payload: t.id })}>
+                              Connect
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost"
+                            onClick={() => dispatch({ type: 'vpn/deleteTunnel', payload: t.id })}>
+                            Del
                           </Button>
-                        ) : (
-                          <Button size="sm" variant="primary" loading={isConnecting}
-                            onClick={() => dispatch({ type: 'vpn/connectTunnel', payload: t.id })}>
-                            Connect
-                          </Button>
-                        )}
-                        <Button size="sm" variant="ghost"
-                          onClick={() => dispatch({ type: 'vpn/deleteTunnel', payload: t.id })}>
-                          Del
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <div ref={sentinelRef} className="load-more-sentinel">
+              {isFetchingNextPage && <span className="spinner" />}
+            </div>
+          </div>
         </div>
       )}
 

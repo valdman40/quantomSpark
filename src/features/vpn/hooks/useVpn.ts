@@ -1,16 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient } from '../../../services/api/client';
 import { ENDPOINTS } from '../../../services/api/endpoints';
 import { queryKeys } from '../../../services/queryKeys';
 import type { ApiResponse } from '../../../types/api';
+import type { PagedResponse } from '../../../types/pagination';
 import type { VpnTunnel, RemoteAccessSettings, RemoteAccessUser } from '../../../types/vpn';
 
 export function useVpnTunnels() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.vpn.tunnels(),
-    queryFn: () =>
-      apiClient.get<ApiResponse<VpnTunnel[]>>(ENDPOINTS.vpn.tunnels)
-        .then(r => r.data),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.get<PagedResponse<VpnTunnel>>(ENDPOINTS.vpn.tunnels, { page: pageParam, pageSize: 20 })
+,
+    getNextPageParam: (last) => last.hasMore ? last.nextPage : undefined,
+    initialPageParam: 1,
   });
 }
 
@@ -24,10 +27,12 @@ export function useRemoteAccess() {
 }
 
 export function useRemoteUsers() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.vpn.remoteUsers(),
-    queryFn: () =>
-      apiClient.get<ApiResponse<RemoteAccessUser[]>>(ENDPOINTS.vpn.remoteUsers)
-        .then(r => r.data),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.get<PagedResponse<RemoteAccessUser>>(ENDPOINTS.vpn.remoteUsers, { page: pageParam, pageSize: 20 })
+,
+    getNextPageParam: (last) => last.hasMore ? last.nextPage : undefined,
+    initialPageParam: 1,
   });
 }

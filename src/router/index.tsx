@@ -33,6 +33,20 @@ import { LocalNetwork }      from '../features/network/components/localNetwork/L
 import { Hotspot }           from '../features/network/components/hotspot/Hotspot';
 import { MacFiltering }      from '../features/network/components/macFiltering/MacFiltering';
 import { Proxy }             from '../features/network/components/proxy/Proxy';
+import { AdminAccess }          from '../features/system/components/adminAccess/AdminAccess';
+import { DeviceDetails }        from '../features/system/components/deviceDetails/DeviceDetails';
+import { DateAndTime }          from '../features/system/components/dateAndTime/DateAndTime';
+import { DdnsAndDeviceAccess }  from '../features/system/components/ddns/DdnsAndDeviceAccess';
+import { AdvancedSettings }     from '../features/system/components/advancedSettings/AdvancedSettings';
+import { Bgp }                  from '../features/network/components/advancedRouting/Bgp';
+import { Pim }                  from '../features/network/components/advancedRouting/Pim';
+import { Ospf }                 from '../features/network/components/advancedRouting/Ospf';
+import { RouteMap }             from '../features/network/components/advancedRouting/RouteMap';
+import { InboundRouteFilters }  from '../features/network/components/advancedRouting/InboundRouteFilters';
+import { RouteRedistribution }  from '../features/network/components/advancedRouting/RouteRedistribution';
+import { RoutingOptions }       from '../features/network/components/advancedRouting/RoutingOptions';
+import { InstalledCertificates } from '../features/network/components/certificates/InstalledCertificates';
+import { InternalCertificate }  from '../features/network/components/certificates/InternalCertificate';
 
 /**
  * Maps an exact nav-config path to its real React component.
@@ -62,10 +76,24 @@ const COMPONENT_MAP: Record<string, React.ReactElement> = {
   '/device/mac-filtering':     <MacFiltering />,
   '/device/dns':               <DnsSettings />,
   '/device/proxy':             <Proxy />,
-  '/device/routing-table':     <RoutingTable />,
-  '/device/administrators':    <AdminList />,
-  '/device/system-operations': <SystemOperations />,
-  '/device/high-availability': <HaStatus />,
+  '/device/routing-table':          <RoutingTable />,
+  '/device/administrators':         <AdminList />,
+  '/device/admin-access':           <AdminAccess />,
+  '/device/device-details':         <DeviceDetails />,
+  '/device/date-time':              <DateAndTime />,
+  '/device/ddns':                   <DdnsAndDeviceAccess />,
+  '/device/system-operations':      <SystemOperations />,
+  '/device/high-availability':      <HaStatus />,
+  '/device/advanced-settings':      <AdvancedSettings />,
+  '/device/bgp':                    <Bgp />,
+  '/device/pim':                    <Pim />,
+  '/device/ospf':                   <Ospf />,
+  '/device/route-map':              <RouteMap />,
+  '/device/inbound-route-filters':  <InboundRouteFilters />,
+  '/device/route-redistribution':   <RouteRedistribution />,
+  '/device/routing-options':        <RoutingOptions />,
+  '/device/installed-certificates': <InstalledCertificates />,
+  '/device/internal-certificate':   <InternalCertificate />,
 
   // Access Policy
   '/access-policy/policy': <RuleTable />,

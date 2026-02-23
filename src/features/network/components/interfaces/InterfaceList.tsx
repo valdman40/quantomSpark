@@ -7,14 +7,17 @@ import { Badge } from '../../../../components/common/Badge';
 import { Modal } from '../../../../components/common/Modal';
 import { DataTable, type Column } from '../../../../components/common/DataTable';
 import { InterfaceForm } from './InterfaceForm';
+import { useInfiniteScroll } from '../../../../hooks/useInfiniteScroll';
 import type { NetworkInterface } from '../../../../types/network';
 
 export function InterfaceList() {
   const dispatch = useAppDispatch();
   const { interfaceModalOpen, selectedInterfaceId } = useAppSelector(s => s.network);
-  const { data: interfaces = [], isLoading } = useInterfaces();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInterfaces();
 
+  const interfaces = data?.pages.flatMap(p => p.data) ?? [];
   const selected = interfaces.find(i => i.id === selectedInterfaceId);
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   const columns: Column<NetworkInterface>[] = [
     {
@@ -63,7 +66,12 @@ export function InterfaceList() {
       />
 
       <div className="card">
-        <DataTable columns={columns} data={interfaces} rowKey="id" loading={isLoading} />
+        <div className="card-table-scroll">
+          <DataTable columns={columns} data={interfaces} rowKey="id" loading={isLoading} />
+          <div ref={sentinelRef} className="load-more-sentinel">
+            {isFetchingNextPage && <span className="spinner" />}
+          </div>
+        </div>
       </div>
 
       <Modal

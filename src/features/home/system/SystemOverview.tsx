@@ -12,8 +12,10 @@ import { mockAlertItems } from '../../../mocks/data/home';
 
 export function SystemOverview() {
   const { data: overviewData, isLoading, error } = useSystemOverview();
-  const { data: notifications = [] } = useNotifications();
-  const { data: assets = [] } = useAssets();
+  const { data: notificationsData } = useNotifications();
+  const { data: assetsData } = useAssets();
+  const notifications = notificationsData?.pages.flatMap(p => p.data) ?? [];
+  const assets = assetsData?.pages.flatMap(p => p.data) ?? [];
 
   if (isLoading) {
     return <div className="loading-box"><span className="spinner" /><span>Loading system overview…</span></div>;

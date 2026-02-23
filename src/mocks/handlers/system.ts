@@ -5,9 +5,14 @@ import type { Administrator } from '../../types/system';
 let admins = [...mockAdmins];
 
 export const systemHandlers = [
-  http.get('/api/system/admins', async () => {
+  http.get('/api/system/admins', async ({ request }) => {
     await delay(300);
-    return HttpResponse.json({ data: admins, status: 'ok' });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = admins.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: admins.length, page, pageSize, hasMore: start + pageSize < admins.length, nextPage: page + 1, status: 'ok' });
   }),
 
   http.post('/api/system/admins', async ({ request }) => {

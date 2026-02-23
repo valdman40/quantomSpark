@@ -21,7 +21,7 @@ export function Proxy() {
   };
 
   return (
-    <div>
+    <div className="page-form-wrapper">
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 4 }}>Proxy</h2>
         <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
@@ -60,7 +60,7 @@ export function Proxy() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+        <div className="page-actions">
           <button type="button" className="btn btn-secondary" onClick={() => reset()}>Cancel</button>
           <button type="submit" className="btn btn-primary">Save</button>
         </div>

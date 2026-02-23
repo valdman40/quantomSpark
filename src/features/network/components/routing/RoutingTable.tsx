@@ -2,10 +2,13 @@ import { useRoutes } from '../../hooks/useRoutes';
 import { PageHeader } from '../../../../components/common/PageHeader';
 import { Badge } from '../../../../components/common/Badge';
 import { DataTable, type Column } from '../../../../components/common/DataTable';
+import { useInfiniteScroll } from '../../../../hooks/useInfiniteScroll';
 import type { StaticRoute } from '../../../../types/network';
 
 export function RoutingTable() {
-  const { data: routes = [], isLoading } = useRoutes();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useRoutes();
+  const routes = data?.pages.flatMap(p => p.data) ?? [];
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   const columns: Column<StaticRoute>[] = [
     { key: 'destination', header: 'Destination', render: r => <span className="mono">{r.destination}</span> },
@@ -31,7 +34,12 @@ export function RoutingTable() {
         subtitle="Static routes and connected networks"
       />
       <div className="card">
-        <DataTable columns={columns} data={routes} rowKey="id" loading={isLoading} />
+        <div className="card-table-scroll">
+          <DataTable columns={columns} data={routes} rowKey="id" loading={isLoading} />
+          <div ref={sentinelRef} className="load-more-sentinel">
+            {isFetchingNextPage && <span className="spinner" />}
+          </div>
+        </div>
       </div>
     </div>
   );

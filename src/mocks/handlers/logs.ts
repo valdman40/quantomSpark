@@ -2,18 +2,33 @@ import { http, HttpResponse, delay } from 'msw';
 import { mockSecurityLogs, mockTrafficLogs, mockSystemEvents } from '../data/logs';
 
 export const logsHandlers = [
-  http.get('/api/logs/security', async () => {
+  http.get('/api/logs/security', async ({ request }) => {
     await delay(400);
-    return HttpResponse.json({ data: mockSecurityLogs, status: 'ok', total: mockSecurityLogs.length });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = mockSecurityLogs.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: mockSecurityLogs.length, page, pageSize, hasMore: start + pageSize < mockSecurityLogs.length, nextPage: page + 1, status: 'ok' });
   }),
 
-  http.get('/api/logs/traffic', async () => {
+  http.get('/api/logs/traffic', async ({ request }) => {
     await delay(400);
-    return HttpResponse.json({ data: mockTrafficLogs, status: 'ok', total: mockTrafficLogs.length });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = mockTrafficLogs.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: mockTrafficLogs.length, page, pageSize, hasMore: start + pageSize < mockTrafficLogs.length, nextPage: page + 1, status: 'ok' });
   }),
 
-  http.get('/api/logs/events', async () => {
+  http.get('/api/logs/events', async ({ request }) => {
     await delay(350);
-    return HttpResponse.json({ data: mockSystemEvents, status: 'ok', total: mockSystemEvents.length });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = mockSystemEvents.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: mockSystemEvents.length, page, pageSize, hasMore: start + pageSize < mockSystemEvents.length, nextPage: page + 1, status: 'ok' });
   }),
 ];

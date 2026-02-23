@@ -5,9 +5,14 @@ import type { VpnTunnel } from '../../types/vpn';
 let tunnels = [...mockTunnels];
 
 export const vpnHandlers = [
-  http.get('/api/vpn/tunnels', async () => {
+  http.get('/api/vpn/tunnels', async ({ request }) => {
     await delay(300);
-    return HttpResponse.json({ data: tunnels, status: 'ok' });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = tunnels.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: tunnels.length, page, pageSize, hasMore: start + pageSize < tunnels.length, nextPage: page + 1, status: 'ok' });
   }),
 
   http.post('/api/vpn/tunnels', async ({ request }) => {
@@ -53,8 +58,13 @@ export const vpnHandlers = [
     return HttpResponse.json({ data: mockRemoteAccess, status: 'ok' });
   }),
 
-  http.get('/api/vpn/remote-access/users', async () => {
+  http.get('/api/vpn/remote-access/users', async ({ request }) => {
     await delay(250);
-    return HttpResponse.json({ data: mockRemoteUsers, status: 'ok' });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = mockRemoteUsers.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: mockRemoteUsers.length, page, pageSize, hasMore: start + pageSize < mockRemoteUsers.length, nextPage: page + 1, status: 'ok' });
   }),
 ];

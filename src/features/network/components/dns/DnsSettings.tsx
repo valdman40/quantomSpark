@@ -24,10 +24,10 @@ export function DnsSettings() {
   if (isLoading) return <div className="loading-box"><span className="spinner" /></div>;
 
   return (
-    <div>
+    <div className="page-form-wrapper">
       <PageHeader title="DNS Settings" subtitle="Configure domain name resolution servers" />
       <Card>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form id="dns-form" onSubmit={handleSubmit(onSubmit)}>
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">Primary DNS Server</label>
@@ -55,11 +55,11 @@ export function DnsSettings() {
             </label>
             <span className="form-hint">Caches DNS responses to improve response time</span>
           </div>
-          <div style={{ marginTop: 8 }}>
-            <Button type="submit" variant="primary">Save DNS Settings</Button>
-          </div>
         </form>
       </Card>
+      <div className="page-actions">
+        <Button type="submit" form="dns-form" variant="primary">Save DNS Settings</Button>
+      </div>
     </div>
   );
 }

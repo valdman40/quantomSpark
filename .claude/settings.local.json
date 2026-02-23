@@ -6,7 +6,13 @@
       "Bash(tail:*)",
       "Bash(cd:*)",
       "Bash(cd \"C:\\\\CPProjects\\\\quantom-spark\" && npx tsc --noEmit 2>&1)",
-      "Bash(cd \"C:/CPProjects/quantom-spark\" && npx tsc --noEmit 2>&1)"
+      "Bash(cd \"C:/CPProjects/quantom-spark\" && npx tsc --noEmit 2>&1)",
+      "Bash(ls:*)",
+      "Bash(echo EXIT_CODE:$?:*)",
+      "Bash(grep:*)",
+      "Bash(echo EXIT:$?:*)",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

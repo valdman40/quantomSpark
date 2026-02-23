@@ -7,6 +7,7 @@ import { Button } from '../../../../components/common/Button';
 import { Badge } from '../../../../components/common/Badge';
 import { Modal } from '../../../../components/common/Modal';
 import { DataTable, type Column } from '../../../../components/common/DataTable';
+import { useInfiniteScroll } from '../../../../hooks/useInfiniteScroll';
 import type { Administrator } from '../../../../types/system';
 
 function statusVariant(s: string) {
@@ -25,7 +26,10 @@ interface FormData { username: string; email: string; password: string; permissi
 export function AdminList() {
   const dispatch = useAppDispatch();
   const { adminModalOpen, saving } = useAppSelector(s => s.system);
-  const { data: admins = [], isLoading } = useAdmins();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useAdmins();
+
+  const admins = data?.pages.flatMap(p => p.data) ?? [];
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     defaultValues: { permission: 'read-only' },
@@ -58,7 +62,12 @@ export function AdminList() {
       />
 
       <div className="card">
-        <DataTable columns={columns} data={admins} rowKey="id" loading={isLoading} />
+        <div className="card-table-scroll">
+          <DataTable columns={columns} data={admins} rowKey="id" loading={isLoading} />
+          <div ref={sentinelRef} className="load-more-sentinel">
+            {isFetchingNextPage && <span className="spinner" />}
+          </div>
+        </div>
       </div>
 
       <Modal open={adminModalOpen} title="Add Administrator" size="sm" onClose={() => dispatch(closeAdminModal())}>

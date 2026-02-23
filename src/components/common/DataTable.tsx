@@ -28,37 +28,35 @@ export function DataTable<T extends object>({
   }
 
   return (
-    <div className="table-wrap">
-      <table className="data-table">
-        <thead>
+    <table className="data-table">
+      <thead>
+        <tr>
+          {columns.map(col => (
+            <th key={col.key} style={col.width ? { width: col.width } : undefined}>
+              {col.header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.length === 0 ? (
           <tr>
-            {columns.map(col => (
-              <th key={col.key} style={col.width ? { width: col.width } : undefined}>
-                {col.header}
-              </th>
-            ))}
+            <td colSpan={columns.length} className="empty">{emptyMessage}</td>
           </tr>
-        </thead>
-        <tbody>
-          {data.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length} className="empty">{emptyMessage}</td>
+        ) : (
+          data.map(row => (
+            <tr key={String(row[rowKey])}>
+              {columns.map(col => (
+                <td key={col.key}>
+                  {col.render
+                    ? col.render(row)
+                    : (row as Record<string, unknown>)[col.key] as ReactNode}
+                </td>
+              ))}
             </tr>
-          ) : (
-            data.map(row => (
-              <tr key={String(row[rowKey])}>
-                {columns.map(col => (
-                  <td key={col.key}>
-                    {col.render
-                      ? col.render(row)
-                      : (row as Record<string, unknown>)[col.key] as ReactNode}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+          ))
+        )}
+      </tbody>
+    </table>
   );
 }

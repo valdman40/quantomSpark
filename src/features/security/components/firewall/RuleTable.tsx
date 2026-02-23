@@ -168,37 +168,39 @@ export function RuleTable() {
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
           >
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 32 }} aria-label="Drag handle" />
-                  <th style={{ width: 36 }}>#</th>
-                  <th>Name</th>
-                  <th>Source</th>
-                  <th>Destination</th>
-                  <th>Service</th>
-                  <th>Action</th>
-                  <th>Track</th>
-                  <th>Status</th>
-                  <th style={{ width: 100 }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <SortableContext
-                  items={orderedRules.map(r => r.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {orderedRules.map(rule => (
-                    <DraggableRuleRow
-                      key={rule.id}
-                      rule={rule}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                    />
-                  ))}
-                </SortableContext>
-              </tbody>
-            </table>
+            <div className="card-table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 32 }} aria-label="Drag handle" />
+                    <th style={{ width: 36 }}>#</th>
+                    <th>Name</th>
+                    <th>Source</th>
+                    <th>Destination</th>
+                    <th>Service</th>
+                    <th>Action</th>
+                    <th>Track</th>
+                    <th>Status</th>
+                    <th style={{ width: 100 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <SortableContext
+                    items={orderedRules.map(r => r.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {orderedRules.map(rule => (
+                      <DraggableRuleRow
+                        key={rule.id}
+                        rule={rule}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                      />
+                    ))}
+                  </SortableContext>
+                </tbody>
+              </table>
+            </div>
 
             {/*
              * DragOverlay renders a detached floating clone while dragging.

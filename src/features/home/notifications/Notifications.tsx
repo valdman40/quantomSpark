@@ -4,6 +4,7 @@ import { NotificationFilters } from './components/NotificationFilters';
 import { PageHeader } from '../../../components/common/PageHeader';
 import { Button } from '../../../components/common/Button';
 import { Badge } from '../../../components/common/Badge';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import type { NotificationSeverity } from '../../../types/home';
 
 function severityVariant(s: NotificationSeverity): 'info' | 'warning' | 'error' {
@@ -14,13 +15,13 @@ export function Notifications() {
   const dispatch   = useAppDispatch();
   const clearing   = useAppSelector(s => s.homeNotifications.clearing);
   const filter     = useAppSelector(s => s.homeNotifications.severityFilter);
-  const { data: all, isLoading, error } = useNotifications();
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useNotifications();
 
-  const notifications = all
-    ? (filter === 'all' ? all : all.filter(n => n.severity === filter))
-    : [];
+  const allNotifications = data?.pages.flatMap(p => p.data) ?? [];
+  const notifications = filter === 'all' ? allNotifications : allNotifications.filter(n => n.severity === filter);
+  const unreadCount = allNotifications.filter(n => !n.read).length;
 
-  const unreadCount = all ? all.filter(n => !n.read).length : 0;
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   if (isLoading) {
     return <div className="loading-box"><span className="spinner" /><span>Loading notifications…</span></div>;
@@ -48,7 +49,8 @@ export function Notifications() {
 
       <NotificationFilters />
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card">
+        <div className="card-table-scroll">
         <table className="data-table">
           <thead>
             <tr>
@@ -88,6 +90,10 @@ export function Notifications() {
             ))}
           </tbody>
         </table>
+        <div ref={sentinelRef} className="load-more-sentinel">
+          {isFetchingNextPage && <span className="spinner" />}
+        </div>
+        </div>
       </div>
     </div>
   );

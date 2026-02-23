@@ -3,6 +3,7 @@ import { Card } from '../../../../components/common/Card';
 import { Badge } from '../../../../components/common/Badge';
 import { DataTable, type Column } from '../../../../components/common/DataTable';
 import { PageHeader } from '../../../../components/common/PageHeader';
+import { useInfiniteScroll } from '../../../../hooks/useInfiniteScroll';
 import type { RemoteAccessUser } from '../../../../types/vpn';
 
 function fmtBytes(n: number) {
@@ -19,7 +20,10 @@ function elapsed(since: string) {
 
 export function RemoteAccessPanel() {
   const { data: settings, isLoading: loadSettings } = useRemoteAccess();
-  const { data: users = [], isLoading: loadUsers } = useRemoteUsers();
+  const { data, isLoading: loadUsers, fetchNextPage, hasNextPage, isFetchingNextPage } = useRemoteUsers();
+
+  const users = data?.pages.flatMap(p => p.data) ?? [];
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   const columns: Column<RemoteAccessUser>[] = [
     { key: 'username',      header: 'Username',     render: r => <span style={{ fontWeight: 600 }}>{r.username}</span> },
@@ -87,8 +91,13 @@ export function RemoteAccessPanel() {
       </div>
 
       <Card title="Connected Users">
-        <DataTable columns={columns} data={users} rowKey="id" loading={loadUsers}
-          emptyMessage="No users currently connected" />
+        <div className="card-table-scroll">
+          <DataTable columns={columns} data={users} rowKey="id" loading={loadUsers}
+            emptyMessage="No users currently connected" />
+          <div ref={sentinelRef} className="load-more-sentinel">
+            {isFetchingNextPage && <span className="spinner" />}
+          </div>
+        </div>
       </Card>
     </div>
   );

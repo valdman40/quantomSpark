@@ -1,15 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient }  from '../../../../services/api/client';
 import { ENDPOINTS }  from '../../../../services/api/endpoints';
 import { queryKeys }  from '../../../../services/queryKeys';
-import type { ApiResponse } from '../../../../types/api';
+import type { PagedResponse } from '../../../../types/pagination';
 import type { ConnectedAsset } from '../../../../types/home';
 
 export function useAssets() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.home.assets(),
-    queryFn: () =>
-      apiClient.get<ApiResponse<ConnectedAsset[]>>(ENDPOINTS.home.assets)
-        .then(r => r.data),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.get<PagedResponse<ConnectedAsset>>(ENDPOINTS.home.assets, { page: pageParam, pageSize: 20 }),
+    getNextPageParam: (last) => last.hasMore ? last.nextPage : undefined,
+    initialPageParam: 1,
   });
 }

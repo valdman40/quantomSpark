@@ -2,10 +2,13 @@ import { useNatRules } from '../../hooks/useFirewallRules';
 import { PageHeader } from '../../../../components/common/PageHeader';
 import { Badge } from '../../../../components/common/Badge';
 import { DataTable, type Column } from '../../../../components/common/DataTable';
+import { useInfiniteScroll } from '../../../../hooks/useInfiniteScroll';
 import type { NatRule } from '../../../../types/security';
 
 export function NatTable() {
-  const { data: natRules = [], isLoading } = useNatRules();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useNatRules();
+  const natRules = data?.pages.flatMap(p => p.data) ?? [];
+  const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
   const columns: Column<NatRule>[] = [
     { key: 'number',              header: '#',           render: r => <span className="rule-num">{r.number}</span> },
@@ -29,7 +32,12 @@ export function NatTable() {
     <div>
       <PageHeader title="NAT Rules" subtitle="Network address translation rules" />
       <div className="card">
-        <DataTable columns={columns} data={natRules} rowKey="id" loading={isLoading} />
+        <div className="card-table-scroll">
+          <DataTable columns={columns} data={natRules} rowKey="id" loading={isLoading} />
+          <div ref={sentinelRef} className="load-more-sentinel">
+            {isFetchingNextPage && <span className="spinner" />}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -15,10 +15,15 @@ export const homeHandlers = [
     return HttpResponse.json({ data: mockSecurityDashboard, status: 'ok' });
   }),
 
-  // Notifications list
-  http.get('/api/home/notifications', async () => {
+  // Notifications list (paginated)
+  http.get('/api/home/notifications', async ({ request }) => {
     await delay(200);
-    return HttpResponse.json({ data: mockNotifications, status: 'ok' });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = mockNotifications.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: mockNotifications.length, page, pageSize, hasMore: start + pageSize < mockNotifications.length, nextPage: page + 1, status: 'ok' });
   }),
 
   // Mark single notification read
@@ -36,10 +41,15 @@ export const homeHandlers = [
     return HttpResponse.json({ status: 'ok' });
   }),
 
-  // Assets
-  http.get('/api/home/assets', async () => {
+  // Assets (paginated)
+  http.get('/api/home/assets', async ({ request }) => {
     await delay(300);
-    return HttpResponse.json({ data: mockAssets, status: 'ok' });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = mockAssets.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: mockAssets.length, page, pageSize, hasMore: start + pageSize < mockAssets.length, nextPage: page + 1, status: 'ok' });
   }),
 
   // Blade categories

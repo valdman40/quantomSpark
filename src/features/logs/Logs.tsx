@@ -7,6 +7,7 @@ import { Badge } from '../../components/common/Badge';
 import { Card } from '../../components/common/Card';
 import { DataTable, type Column } from '../../components/common/DataTable';
 import { LogFilters } from './components/LogFilters';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import type { SecurityLogEntry, TrafficLogEntry, SystemEvent } from '../../types/logs';
 
 function actionVariant(a: string) {
@@ -29,7 +30,6 @@ function fmtBytes(n: number) {
 }
 
 interface LogsProps {
-  /** Pre-select a tab when the component mounts (driven by route). */
   defaultTab?: 'security' | 'traffic' | 'events';
 }
 
@@ -37,14 +37,32 @@ export function Logs({ defaultTab }: LogsProps = {}) {
   const dispatch = useAppDispatch();
   const { activeTab, filters } = useAppSelector(s => s.logs);
 
-  // Sync the active tab whenever the route-driven defaultTab changes
   useEffect(() => {
     if (defaultTab) dispatch(setActiveTab(defaultTab));
   }, [defaultTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { data: secLogs = [], isLoading: loadSec } = useSecurityLogs(filters);
-  const { data: trafLogs = [], isLoading: loadTraf } = useTrafficLogs(filters);
-  const { data: events = [], isLoading: loadEvents } = useSystemEvents(filters);
+  const {
+    data: secData, isLoading: loadSec,
+    fetchNextPage: fetchNextSec, hasNextPage: hasNextSec, isFetchingNextPage: fetchingSec,
+  } = useSecurityLogs(filters);
+
+  const {
+    data: trafData, isLoading: loadTraf,
+    fetchNextPage: fetchNextTraf, hasNextPage: hasNextTraf, isFetchingNextPage: fetchingTraf,
+  } = useTrafficLogs(filters);
+
+  const {
+    data: eventsData, isLoading: loadEvents,
+    fetchNextPage: fetchNextEvents, hasNextPage: hasNextEvents, isFetchingNextPage: fetchingEvents,
+  } = useSystemEvents(filters);
+
+  const secLogs = secData?.pages.flatMap(p => p.data) ?? [];
+  const trafLogs = trafData?.pages.flatMap(p => p.data) ?? [];
+  const events = eventsData?.pages.flatMap(p => p.data) ?? [];
+
+  const secSentinelRef    = useInfiniteScroll(fetchNextSec,    hasNextSec,    fetchingSec);
+  const trafSentinelRef   = useInfiniteScroll(fetchNextTraf,   hasNextTraf,   fetchingTraf);
+  const eventSentinelRef  = useInfiniteScroll(fetchNextEvents, hasNextEvents, fetchingEvents);
 
   const secCols: Column<SecurityLogEntry>[] = [
     { key: 'timestamp',  header: 'Time',    render: r => <span className="mono text-sm">{new Date(r.timestamp).toLocaleTimeString()}</span> },
@@ -98,13 +116,28 @@ export function Logs({ defaultTab }: LogsProps = {}) {
 
       <Card noPadding>
         {activeTab === 'security' && (
-          <DataTable columns={secCols} data={secLogs} rowKey="id" loading={loadSec} />
+          <div className="card-table-scroll">
+            <DataTable columns={secCols} data={secLogs} rowKey="id" loading={loadSec} />
+            <div ref={secSentinelRef} className="load-more-sentinel">
+              {fetchingSec && <span className="spinner" />}
+            </div>
+          </div>
         )}
         {activeTab === 'traffic' && (
-          <DataTable columns={trafCols} data={trafLogs} rowKey="id" loading={loadTraf} />
+          <div className="card-table-scroll">
+            <DataTable columns={trafCols} data={trafLogs} rowKey="id" loading={loadTraf} />
+            <div ref={trafSentinelRef} className="load-more-sentinel">
+              {fetchingTraf && <span className="spinner" />}
+            </div>
+          </div>
         )}
         {activeTab === 'events' && (
-          <DataTable columns={eventCols} data={events} rowKey="id" loading={loadEvents} />
+          <div className="card-table-scroll">
+            <DataTable columns={eventCols} data={events} rowKey="id" loading={loadEvents} />
+            <div ref={eventSentinelRef} className="load-more-sentinel">
+              {fetchingEvents && <span className="spinner" />}
+            </div>
+          </div>
         )}
       </Card>
     </div>

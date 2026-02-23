@@ -12,7 +12,7 @@ export function MacFiltering() {
     dispatch(addNotification({ type: 'info', message: msg }));
 
   return (
-    <div>
+    <div className="page-form-wrapper">
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 4 }}>MAC Filtering</h2>
         <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
@@ -51,6 +51,7 @@ export function MacFiltering() {
       {/* LAN MAC Filter section */}
       <div className="mac-section">
         <div className="mac-section-hdr">LAN MAC Filter</div>
+        <div className="card-table-scroll">
         <div className="mac-toolbar">
           <button className="btn btn-secondary btn-sm" onClick={() => fire('Add MAC address…')}>
             <Plus size={13} style={{ marginRight: 3 }} />
@@ -86,9 +87,10 @@ export function MacFiltering() {
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+      <div className="page-actions">
         <button type="button" className="btn btn-secondary">Cancel</button>
         <button type="button" className="btn btn-primary" onClick={() => fire('MAC filtering settings saved.')}>
           Save

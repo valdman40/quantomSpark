@@ -70,10 +70,15 @@ export const securityHandlers = [
     return HttpResponse.json({ data: { success: true, rulesInstalled: rules.length, duration: 1.5 }, status: 'ok' });
   }),
 
-  // NAT rules
-  http.get('/api/security/nat', async () => {
+  // NAT rules (paginated)
+  http.get('/api/security/nat', async ({ request }) => {
     await delay(250);
-    return HttpResponse.json({ data: natRules, status: 'ok' });
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const pageSize = Number(url.searchParams.get('pageSize') ?? 20);
+    const start = (page - 1) * pageSize;
+    const slice = natRules.slice(start, start + pageSize);
+    return HttpResponse.json({ data: slice, total: natRules.length, page, pageSize, hasMore: start + pageSize < natRules.length, nextPage: page + 1, status: 'ok' });
   }),
 
   http.post('/api/security/nat', async ({ request }) => {

@@ -1,16 +1,18 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient } from '../../../services/api/client';
 import { ENDPOINTS } from '../../../services/api/endpoints';
 import { queryKeys } from '../../../services/queryKeys';
 import type { ApiResponse } from '../../../types/api';
+import type { PagedResponse } from '../../../types/pagination';
 import type { Administrator, SoftwareVersion, HaSettings } from '../../../types/system';
 
 export function useAdmins() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.system.admins(),
-    queryFn: () =>
-      apiClient.get<ApiResponse<Administrator[]>>(ENDPOINTS.system.admins)
-        .then(r => r.data),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.get<PagedResponse<Administrator>>(ENDPOINTS.system.admins, { page: pageParam, pageSize: 20 }),
+    getNextPageParam: (last) => last.hasMore ? last.nextPage : undefined,
+    initialPageParam: 1,
   });
 }
 
