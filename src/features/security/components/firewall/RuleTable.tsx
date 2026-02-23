@@ -18,6 +18,8 @@ import {
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
+import { AlertTriangle, RefreshCw, ShieldOff } from 'lucide-react';
+
 import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
 import { openAddRule, openEditRule } from '../../securitySlice';
 import { useFirewallRules } from '../../hooks/useFirewallRules';
@@ -30,10 +32,14 @@ import { RuleForm } from './RuleForm';
 import { DraggableRuleRow } from './DraggableRuleRow';
 import type { FirewallRule } from '../../../../types/security';
 
+// Stable fallback reference — prevents useEffect([serverRules]) from firing on every
+// render when the query has no data yet (a new `[]` literal each render would do that).
+const EMPTY_RULES: FirewallRule[] = [];
+
 export function RuleTable() {
   const dispatch = useAppDispatch();
   const { ruleModalOpen, selectedRuleId, policyInstall } = useAppSelector(s => s.security);
-  const { data: serverRules = [], isLoading } = useFirewallRules();
+  const { data: serverRules = EMPTY_RULES, isLoading, isError, error, refetch } = useFirewallRules();
 
   // ── Local ordered copy for instant visual feedback ──────────
   const [orderedRules, setOrderedRules] = useState<FirewallRule[]>(serverRules);
@@ -158,6 +164,24 @@ export function RuleTable() {
 
       {isLoading ? (
         <div className="loading-box"><span className="spinner" /><span>Loading rules…</span></div>
+      ) : isError ? (
+        <div className="error-state">
+          <ShieldOff size={40} className="error-state-icon" />
+          <h3 className="error-state-title">Failed to load firewall rules</h3>
+          <p className="error-state-msg">
+            {(error as Error)?.message ?? 'An unexpected error occurred while contacting the gateway.'}
+          </p>
+          <div className="error-state-actions">
+            <Button variant="primary" onClick={() => refetch()}>
+              <RefreshCw size={14} style={{ marginRight: 6 }} />
+              Try Again
+            </Button>
+            <span className="error-state-hint">
+              <AlertTriangle size={13} />
+              Check that the gateway is reachable and your session cookie is valid.
+            </span>
+          </div>
+        </div>
       ) : (
         <div className="card">
           <DndContext

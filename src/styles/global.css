@@ -305,6 +305,18 @@ select.form-control {
            border-radius: 50%; animation: spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ─── Error state ────────────────────────────────────────────── */
+.error-state { display: flex; flex-direction: column; align-items: center; justify-content: center;
+               padding: 56px 32px; gap: 12px; text-align: center;
+               background: var(--content-bg); border: 1px solid var(--border); border-radius: 8px; }
+.error-state-icon { color: #d93025; opacity: 0.85; }
+.error-state-title { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+.error-state-msg { font-size: 0.85rem; color: var(--text-secondary); max-width: 480px;
+                   margin: 0; line-height: 1.5; word-break: break-word; }
+.error-state-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 4px; }
+.error-state-hint { display: flex; align-items: center; gap: 5px; font-size: 0.78rem;
+                    color: var(--text-secondary); }
+
 /* ─── Progress bar ───────────────────────────────────────────── */
 .progress     { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
 .progress-bar { height: 100%; background: var(--brand); border-radius: 3px; transition: width .3s; }

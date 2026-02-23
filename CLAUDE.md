@@ -2,7 +2,8 @@
 
 ## Project
 A React demo/mockup of the Check Point Quantum Spark gateway admin UI.
-No real backend — all data served via MSW in-browser mock API (`/api/*`).
+By default all data is served via MSW in-browser mock API (`/api/*`).
+Set `VITE_USE_REAL_API=true` in `.env.local` to call the real gateway (see **Gateway API** section).
 
 ## Running
 ```bash
@@ -137,6 +138,56 @@ src/
 3. Add mock data to `src/mocks/data/<section>.ts`
 4. Add MSW handler to `src/mocks/handlers/<section>.ts`
 5. Create React Query hook in `src/features/<section>/hooks/`
+
+---
+
+## Gateway API
+
+The real gateway exposes a JSON-RPC–style endpoint. Currently wired for firewall rules only.
+
+### Request format
+```
+POST https://{ip}:4434/platform.cgi?mvc=true&token={url_token}&currentPage={page}&op={op}
+Headers: Content-Type: application/json, X-Requested-With: XMLHttpRequest
+         Cookie: cpa=admin; UTM1Login={session_token}   ← injected by Vite proxy
+Body:    {"action":"fwRuleView","method":"read","data":[{...}],"type":"rpc","tid":N}
+```
+
+### Response envelope
+```json
+{ "type":"rpc","tid":1,"result":{"totalCount":N,"success":true,"data":[...],"messages":{"fullMessages":[]}} }
+```
+
+### Toggle mock ↔ real data
+Set these in `.env.local` (never commit) then restart the dev server:
+```
+VITE_USE_REAL_API=true          # false = MSW mock (default)
+VITE_GATEWAY_IP=172.28.x.x
+VITE_GATEWAY_PORT=4434
+VITE_GATEWAY_TOKEN=<url token>
+VITE_GATEWAY_COOKIE=cpa=admin; UTM1Login=<session token>
+```
+See `.env.example` for the full list with instructions.
+
+### Key files
+- `src/config.ts` — `USE_REAL_API`, `GATEWAY_TOKEN` flags
+- `src/types/gateway.ts` — `GatewayFwRule`, `GatewayNetworkObject`, `GatewayRpcResponse`, etc.
+- `src/services/api/gatewayClient.ts` — `gatewayClient.fetchFirewallRules()`
+- `src/services/api/normalizers/firewallNormalizer.ts` — maps gateway data → `FirewallRule`
+- `vite.config.ts` — Vite proxy (`/gateway/*` → `https://{ip}:4434`, `secure:false`)
+
+### Adding a new gateway endpoint
+1. Add a method to `gatewayClient.ts` calling the `rpcCall()` helper with the right `op` and `currentPage`.
+2. Add the gateway response type to `src/types/gateway.ts`.
+3. Create a normalizer in `src/services/api/normalizers/` that maps it to the existing app type.
+4. Branch on `USE_REAL_API` in the relevant React Query hook (same pattern as `useFirewallRules`).
+
+### Gateway field conventions
+- Fields with no value arrive as `[]` (empty array), not `null` / `undefined`.
+- `action` strings: `ACTION.ACCEPT` | `ACTION.BLOCK` | `ACTION.REJECT` | `ACTION.LAYER`
+- `log` strings: `LOG_LEVEL.LOG` | `LOG_LEVEL.NONE` | `LOG_LEVEL.ALERT`
+- `sources` / `destinations` / `appsAndServices` arrays — empty = "Any"
+- `sectionIdx` + `idx` together define rule ordering (idx can be fractional, e.g. 0.125)
 
 ---
 
