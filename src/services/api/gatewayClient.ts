@@ -56,7 +56,19 @@ async function rpcCall<T>(
     throw new Error(`Gateway responded with ${res.status} ${res.statusText}`);
   }
 
-  const json = await res.json() as GatewayRpcResponse<T>;
+  const raw = await res.json();
+
+  // Some Ext JS / JSON-RPC backends wrap the response in an array even for
+  // single requests: [{type:"rpc", result:{...}}] — unwrap if needed.
+  const json = (Array.isArray(raw) ? raw[0] : raw) as GatewayRpcResponse<T>;
+
+  console.log('[gateway] response envelope:', {
+    isArray: Array.isArray(raw),
+    type: json?.type,
+    success: json?.result?.success,
+    totalCount: json?.result?.totalCount,
+    dataLength: Array.isArray(json?.result?.data) ? json.result.data.length : json?.result?.data,
+  });
 
   if (!json.result?.success) {
     const msgs = json.result?.messages?.fullMessages ?? [];
