@@ -9,7 +9,11 @@ export default defineConfig(({ mode }) => {
   const port = env.VITE_GATEWAY_PORT ?? '4434';
   const cookie = env.VITE_GATEWAY_COOKIE;
   const token = env.VITE_GATEWAY_TOKEN ?? '';
-  const gatewayOrigin = ip ? `https://${ip}:${port}` : undefined;
+  // For standard HTTPS (443) omit the port so Origin/Referer match the
+  // browser's canonical form (https://host, not https://host:443).
+  const gatewayOrigin = ip
+    ? (port === '443' ? `https://${ip}` : `https://${ip}:${port}`)
+    : undefined;
 
   // Startup diagnostics — printed once when Vite initialises the config.
   if (gatewayOrigin) {

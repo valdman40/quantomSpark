@@ -21,7 +21,7 @@ export const securityHandlers = [
       name: body.name ?? 'New Rule',
       source: body.source ?? ['Any'],
       destination: body.destination ?? ['Any'],
-      service: body.service ?? ['Any'],
+      service: body.service ?? [{ name: 'Any' }],
       action: body.action ?? 'Drop',
       track: body.track ?? 'Log',
       enabled: body.enabled ?? true,

@@ -55,11 +55,17 @@ export interface GatewayService {
   __id: string;
   __tblName: string;
   name: string;
+  /** Numeric application ID — present for app entries, [] for service groups. */
+  appId: number | [];
   type: string;
   ipProtocol: number | [];
   systemUUID: string | [];
   not_owned: boolean | [];
   modified: string | [];
+  /** Human-readable description of the service/app. [] when absent. */
+  description: string | [];
+  /** Comma-separated classification tags (e.g. "High Bandwidth,VoIP"). [] when absent. */
+  tags: string | [];
   comments: string | [];
 }
 
@@ -89,7 +95,8 @@ export interface GatewayActionLayer {
  * Action values: ACTION.ACCEPT | ACTION.BLOCK | ACTION.REJECT | ACTION.LAYER
  * Log values:    LOG_LEVEL.LOG | LOG_LEVEL.NONE | LOG_LEVEL.ALERT
  * Zone values:   ZONE.NONE | ZONE.INTERNAL_INCOMING | ZONE.OUTGOING
- * Origin values: RULE_ORIGIN.MANUAL | RULE_ORIGIN.GENERATED
+ * Origin values: RULE_ORIGIN.SMP_PRE | RULE_ORIGIN.MANUAL | RULE_ORIGIN.SMP_POST
+ *                | RULE_ORIGIN.GENERATED | RULE_ORIGIN.IOT
  */
 export interface GatewayFwRule {
   __pk: string;
@@ -147,7 +154,9 @@ export interface GatewayRpcResponse<T> {
   result: {
     totalCount: number;
     success: boolean;
-    messages: { fullMessages: string[] };
+    messages: {
+      fullMessages: string[] | Record<string, Array<{ type: string; code: string; text: string }>>;
+    };
     data: T[];
   };
 }

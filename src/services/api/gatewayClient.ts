@@ -71,8 +71,19 @@ async function rpcCall<T>(
   });
 
   if (!json.result?.success) {
-    const msgs = json.result?.messages?.fullMessages ?? [];
-    throw new Error(`Gateway RPC error: ${msgs.join('; ') || 'unknown error'}`);
+    const fullMessages = json.result?.messages?.fullMessages;
+    let errorText: string;
+    if (Array.isArray(fullMessages)) {
+      errorText = fullMessages.join('; ') || 'unknown error';
+    } else if (fullMessages && typeof fullMessages === 'object') {
+      errorText = Object.entries(fullMessages)
+        .map(([field, errs]) =>
+          `${field}: ${(errs as Array<{ text: string }>).map(e => e.text).join(', ')}`)
+        .join('; ');
+    } else {
+      errorText = 'unknown error';
+    }
+    throw new Error(`Gateway error: ${errorText}`);
   }
 
   return json;
@@ -92,6 +103,63 @@ export const gatewayClient = {
       'fwRuleView',
       'read',
       [{ dataRequestType: 'config', page: 1, limit: 2000 }],
+    );
+  },
+
+  /**
+   * Returns a new GatewayFwRule with gateway-provided default values.
+   * Call this before opening the "Add Rule" form to pre-populate fields.
+   */
+  newInstance(): Promise<GatewayRpcResponse<GatewayFwRule>> {
+    return rpcCall<GatewayFwRule>(
+      'fwRule.newInstance',
+      'app.FWAllRulebase',
+      'fwRule',
+      'newInstance',
+      [],
+    );
+  },
+
+  /**
+   * Creates a new firewall rule on the gateway.
+   * @param data Full GatewayFwRule object (newInstance defaults + form values applied)
+   */
+  createRule(data: Record<string, unknown>): Promise<GatewayRpcResponse<GatewayFwRule>> {
+    return rpcCall<GatewayFwRule>(
+      'fwRule.create',
+      'app.FWAllRulebase',
+      'fwRule',
+      'create',
+      [data],
+    );
+  },
+
+  /**
+   * Updates an existing firewall rule on the gateway.
+   * @param data Full GatewayFwRule object with updated fields
+   */
+  updateRule(data: Record<string, unknown>): Promise<GatewayRpcResponse<GatewayFwRule>> {
+    return rpcCall<GatewayFwRule>(
+      'fwRule.update',
+      'app.FWAllRulebase',
+      'fwRule',
+      'update',
+      [data],
+    );
+  },
+
+  /**
+   * Deletes a firewall rule on the gateway.
+   * @param tblName The source table (from GatewayFwRule.__tblName, e.g. 'fwRule')
+   * @param nativeId The row's __id on that table
+   */
+  destroyRule(tblName: string, nativeId: string): Promise<GatewayRpcResponse<GatewayFwRule>> {
+    return rpcCall<GatewayFwRule>(
+      `${tblName}.destroy`,
+      'app.FWAllRulebase',
+      tblName,
+      'destroy',
+      [{ id: nativeId }],
     );
   },
 };

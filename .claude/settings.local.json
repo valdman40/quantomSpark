@@ -12,7 +12,10 @@
       "Bash(grep:*)",
       "Bash(echo EXIT:$?:*)",
       "Bash(find:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(echo Exit: $?:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)"
     ]
   }
 }

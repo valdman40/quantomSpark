@@ -227,12 +227,43 @@ input, select, textarea { font-family: inherit; }
                  text-transform: uppercase; letter-spacing: .05em; color: var(--text-secondary);
                  background: #f8fafc; border-bottom: 1px solid var(--border); white-space: nowrap;
                  position: sticky; top: 0; z-index: 2; }
-.data-table td { padding: 10px 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.data-table tr:last-child td { border-bottom: none; }
+.data-table td { padding: 10px 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .data-table tr:hover td { background: #f8fafc; }
 .data-table .actions { display: flex; gap: 4px; }
 .data-table .rule-num { color: var(--text-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
 .data-table .mono     { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.75rem; }
+
+/* ─── Chip (icon + label pill) ───────────────────────────── */
+/* ─── Chip (icon + label pill) ───────────────────────────── */
+.chip       { display: inline-flex; align-items: center; gap: 5px;
+              padding: 2px 7px 2px 5px; border: 1px solid var(--border); border-radius: 100px;
+              background: var(--surface); font-size: 0.78rem; white-space: nowrap; cursor: default; }
+.chip-icon  { display: flex; align-items: center; flex-shrink: 0; }
+.chip-icon img { width: 16px; height: 16px; object-fit: contain; border-radius: 2px; display: block; }
+.chip-label { line-height: 1; }
+
+/* ─── Chip tooltip (portal — rendered at document.body, position: fixed) ─── */
+.chip-tooltip {
+  position: fixed; z-index: 9000;
+  display: flex; flex-direction: column; gap: 6px;
+  min-width: 260px; max-width: 360px;
+  background: #fff; border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.14);
+  padding: 10px 12px; pointer-events: none;
+}
+.chip-tooltip-header {
+  display: flex; align-items: center; gap: 7px;
+  padding-bottom: 7px;
+}
+.chip-tooltip-icon      { display: flex; align-items: center; flex-shrink: 0; }
+.chip-tooltip-icon img  { width: 18px; height: 18px; object-fit: contain; border-radius: 2px; display: block; }
+.chip-tooltip-title     { font-weight: 600; font-size: 0.85rem; color: var(--text); }
+.chip-tooltip-row       { display: flex; gap: 8px; font-size: 0.78rem; line-height: 1.45; }
+.chip-tooltip-key       { flex-shrink: 0; font-weight: 500; color: var(--text-muted); min-width: 76px; }
+.chip-tooltip-val       { color: var(--text); white-space: normal; word-break: break-word; }
+
+/* ─── Service column chip list ───────────────────────────── */
+.svc-list   { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 4px 0; }
 
 /* ─── Badges ─────────────────────────────────────────────────── */
 .badge   { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
@@ -387,6 +418,68 @@ select.form-control {
   border-bottom: none;
   white-space: nowrap;
 }
+
+/* ─── Firewall page — full-height flex layout ─────────────────── */
+.fw-page          { height: 100%; display: flex; flex-direction: column; }
+.fw-page-body     { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.fw-page-body .card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.fw-page-body .card-table-scroll {
+  flex: 1;
+  min-height: 0;
+  max-height: none; /* override global calc(100vh - 300px) */
+}
+
+/* ─── Row highlight after create / edit ───────────────────────── */
+/* Animate the <tr> background — td box-shadow is clipped in border-collapse tables.
+   The <td> is forced transparent so the <tr> animation shows through. */
+@keyframes fw-rule-highlight {
+  0%, 20% { background: #dbeafe; }
+  80%     { background: rgba(219,234,254,.3); }
+  100%    { background: transparent; }
+}
+.fw-rule--highlight           { animation: fw-rule-highlight 2.4s ease-out forwards; }
+.fw-rule--highlight td        { background: transparent !important; opacity: 1 !important; }
+
+/* ─── Firewall rule-table section headers ────────────────────── */
+/* Zone = top-level section (Outgoing / Incoming) */
+.fw-zone-header td {
+  background: #e4e9ee;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 6px 14px;
+  border-top: 2px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+.fw-zone-header:hover td { background: #d8dee5; }
+/* Origin = inner section (Auto Generated Rules, SMP, IoT) */
+.fw-origin-header td {
+  background: #fdf8ec;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.8rem;
+  padding: 5px 14px 5px 32px;
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+.fw-origin-header:hover td { background: #faefd4; }
+.fw-zone-header,
+.fw-origin-header { cursor: pointer; }
+.fw-section-chevron {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 0.65rem;
+  opacity: 0.55;
+  transition: transform 0.15s ease;
+}
+.fw-section-chevron--collapsed { transform: rotate(-90deg); }
 
 /* Hint banner shown after a reorder until policy is installed */
 .reorder-hint {
@@ -806,3 +899,71 @@ select.form-control {
 /* ─── Infinite scroll sentinel ──────────────────────────────────── */
 .load-more-sentinel  { height: 48px; display: flex; align-items: center;
                        justify-content: center; color: var(--text-muted); }
+
+/* ─── New-rule dropdown button ───────────────────────────────────── */
+.new-rule-dropdown          { position: relative; display: inline-flex; }
+.new-rule-dropdown-menu     { position: absolute; top: calc(100% + 4px); right: 0;
+                               min-width: 160px; background: var(--card-bg);
+                               border: 1px solid var(--border); border-radius: var(--radius);
+                               box-shadow: var(--shadow-md); z-index: 200;
+                               overflow: hidden; }
+.new-rule-dropdown-item     { display: block; width: 100%; padding: 8px 14px;
+                               background: none; border: none; text-align: left;
+                               font-size: 0.84rem; color: var(--text); cursor: pointer;
+                               white-space: nowrap; }
+.new-rule-dropdown-item:hover:not(:disabled) { background: var(--content-bg); }
+.new-rule-dropdown-item:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Rule row selection highlight ──────────────────────────────── */
+.rule-row--selected td      { background: #eef3fd !important; }
+
+/* ─── Rule form horizontal editor ───────────────────────────────── */
+.rule-form-zone-label {
+  font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;
+  font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.rule-form-editor-wrap      { overflow-x: auto; margin-bottom: 10px;
+                               border: 1px solid var(--border); border-radius: var(--radius); }
+.rule-form-editor           { width: 100%; border-collapse: collapse; table-layout: auto; }
+.rule-form-th               { font-size: 0.76rem; font-weight: 600; color: var(--text-secondary);
+                               background: #f8fafc; padding: 7px 10px;
+                               border-bottom: 1px solid var(--border); white-space: nowrap;
+                               text-align: left; }
+.rule-form-td               { padding: 8px 10px; border-bottom: none; vertical-align: top; }
+.rule-form-input            { border: 1px solid var(--border); border-radius: 4px;
+                               padding: 5px 8px; font-size: 0.84rem; outline: none;
+                               background: #fff; transition: border-color 0.15s; }
+.rule-form-input:focus      { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(59,130,246,.15); }
+.rule-form-input--error     { border-color: var(--red) !important; }
+.rule-form-input--name      { width: 130px; }
+.rule-form-input--object    { width: 110px; }
+.rule-form-input--time      { width: 96px; background: #f8fafc; }
+.rule-form-input--bandwidth { width: 80px; background: #f8fafc; }
+.rule-form-select           { border: 1px solid var(--border); border-radius: 4px;
+                               padding: 5px 8px; font-size: 0.84rem; outline: none;
+                               background: #fff; cursor: pointer; min-width: 90px; }
+.rule-form-select:focus     { border-color: var(--blue); }
+.rule-form-object-cell      { display: flex; align-items: center; gap: 4px; }
+.rule-form-error            { display: block; font-size: 0.74rem; color: var(--red); margin-top: 3px; }
+.rule-form-error-banner     { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 4px; padding: 8px 12px; font-size: 0.83rem; color: #b91c1c; margin-bottom: 8px; }
+
+/* Comment area */
+.rule-form-comment          { width: 100%; border: 1px solid var(--border); border-radius: 4px;
+                               padding: 8px 10px; font-size: 0.84rem; resize: vertical;
+                               outline: none; margin-bottom: 8px; }
+.rule-form-comment:focus    { border-color: var(--blue); }
+
+/* Optional sections (time / bandwidth limits) */
+.rule-form-optional-section { display: flex; align-items: center; flex-wrap: wrap;
+                               gap: 8px; padding: 5px 0;
+                               border-top: 1px solid var(--border); }
+.rule-form-optional-label   { display: flex; align-items: center; gap: 6px;
+                               font-size: 0.83rem; color: var(--text); min-width: 260px; }
+.rule-form-optional-inputs  { display: flex; align-items: center; gap: 6px; }
+.rule-form-optional-sep     { color: var(--text-muted); font-size: 0.9rem; }
+.rule-form-optional-unit    { font-size: 0.82rem; color: var(--text-muted); }
+
+/* Enabled row */
+.rule-form-enabled-row      { padding: 8px 0 0; display: flex; align-items: center; }
+.rule-form-enabled-row label { display: flex; align-items: center; gap: 7px;
+                               font-size: 0.85rem; cursor: pointer; }

@@ -8,13 +8,13 @@ const DESTS       = ['Internet', 'LAN', 'DMZ-WebServer', 'Checkpoint-GW', 'Any',
 const SERVICES_FW = ['Any', 'HTTP', 'HTTPS', 'DNS', 'SSH', 'RDP', 'SMTP', 'FTP', 'BitTorrent,eDonkey', 'SMB'];
 
 export let mockFirewallRules: FirewallRule[] = [
-  { id: 'fr-1', number: 1,  name: 'Allow LAN to Internet',    source: ['LAN'],               destination: ['Internet'],      service: ['Any'],                action: 'Accept',  track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Outbound internet access' },
-  { id: 'fr-2', number: 2,  name: 'Allow DNS',                source: ['LAN'],               destination: ['Any'],           service: ['DNS'],               action: 'Accept',  track: 'None',  enabled: true,  installedOn: ['All'] },
-  { id: 'fr-3', number: 3,  name: 'Block P2P',                source: ['LAN'],               destination: ['Any'],           service: ['BitTorrent','eDonkey'], action: 'Drop', track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Block peer-to-peer applications' },
-  { id: 'fr-4', number: 4,  name: 'Allow DMZ Web',            source: ['Internet'],          destination: ['DMZ-WebServer'], service: ['HTTP','HTTPS'],      action: 'Accept',  track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Inbound web traffic to DMZ' },
-  { id: 'fr-5', number: 5,  name: 'Allow VPN Remote Access',  source: ['VPN_RA_Community'],  destination: ['LAN'],           service: ['Any'],               action: 'Encrypt', track: 'Log',   enabled: true,  installedOn: ['All'] },
-  { id: 'fr-6', number: 6,  name: 'Stealth Rule',             source: ['Any'],               destination: ['Checkpoint-GW'], service: ['Any'],               action: 'Drop',    track: 'Alert', enabled: true,  installedOn: ['All'], comment: 'Protect the gateway itself' },
-  { id: 'fr-7', number: 7,  name: 'Cleanup Rule',             source: ['Any'],               destination: ['Any'],           service: ['Any'],               action: 'Drop',    track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Drop everything else' },
+  { id: 'fr-1', number: 1,  name: 'Allow LAN to Internet',    source: ['LAN'],               destination: ['Internet'],      service: [{ name: 'Any' }],                            action: 'Accept',  track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Outbound internet access' },
+  { id: 'fr-2', number: 2,  name: 'Allow DNS',                source: ['LAN'],               destination: ['Any'],           service: [{ name: 'DNS', description: 'Domain Name System — translates hostnames to IP addresses. Operates on UDP/TCP port 53.', tags: ['Infrastructure', 'UDP', 'TCP', 'Port 53'] }], action: 'Accept', track: 'None', enabled: true, installedOn: ['All'] },
+  { id: 'fr-3', number: 3,  name: 'Block P2P',                source: ['LAN'],               destination: ['Any'],           service: [{ name: 'BitTorrent', description: 'BitTorrent is a peer-to-peer file sharing protocol. Can consume high bandwidth and bypass standard port filtering.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'Medium Risk'] }, { name: 'eDonkey', description: 'eDonkey2000 (also known as eDonkey2000 Network) is a decentralized peer-to-peer file sharing network. Associated with copyright-infringing downloads.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'High Risk'] }], action: 'Drop', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Block peer-to-peer applications' },
+  { id: 'fr-4', number: 4,  name: 'Allow DMZ Web',            source: ['Internet'],          destination: ['DMZ-WebServer'], service: [{ name: 'HTTP', description: 'Hypertext Transfer Protocol — unencrypted web traffic. Operates on TCP port 80.', tags: ['Web', 'TCP', 'Port 80', 'Unencrypted'] }, { name: 'HTTPS', description: 'HTTP Secure — encrypted web traffic using TLS/SSL. Operates on TCP port 443.', tags: ['Web', 'TCP', 'Port 443', 'Encrypted', 'SSL/TLS'] }], action: 'Accept', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Inbound web traffic to DMZ' },
+  { id: 'fr-5', number: 5,  name: 'Allow VPN Remote Access',  source: ['VPN_RA_Community'],  destination: ['LAN'],           service: [{ name: 'Any' }],                            action: 'Encrypt', track: 'Log',   enabled: true,  installedOn: ['All'] },
+  { id: 'fr-6', number: 6,  name: 'Stealth Rule',             source: ['Any'],               destination: ['Checkpoint-GW'], service: [{ name: 'Any' }],                            action: 'Drop',    track: 'Alert', enabled: true,  installedOn: ['All'], comment: 'Protect the gateway itself' },
+  { id: 'fr-7', number: 7,  name: 'Cleanup Rule',             source: ['Any'],               destination: ['Any'],           service: [{ name: 'Any' }],                            action: 'Drop',    track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Drop everything else' },
   ...Array.from({ length: 53 }, (_, i): FirewallRule => {
     const n      = i + 8;
     const src    = SOURCES[n % SOURCES.length];
@@ -28,7 +28,7 @@ export let mockFirewallRules: FirewallRule[] = [
       name: `Rule ${n} — ${src} to ${dst}`,
       source: [src],
       destination: [dst],
-      service: [svc],
+      service: [{ name: svc }],
       action,
       track,
       enabled: n % 7 !== 0,

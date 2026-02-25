@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -16,12 +16,12 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable';
-import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 import { AlertTriangle, RefreshCw, ShieldOff } from 'lucide-react';
 
 import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
-import { openAddRule, openEditRule } from '../../securitySlice';
+import { openEditRule, setFocusedRule } from '../../securitySlice';
 import { useFirewallRules } from '../../hooks/useFirewallRules';
 import { queryClient } from '../../../../app/queryClient';
 import { queryKeys } from '../../../../services/queryKeys';
@@ -36,20 +36,193 @@ import type { FirewallRule } from '../../../../types/security';
 // render when the query has no data yet (a new `[]` literal each render would do that).
 const EMPTY_RULES: FirewallRule[] = [];
 
+// ── Section label maps ───────────────────────────────────────────────────────
+
+const ZONE_LABELS: Record<string, string> = {
+  'ZONE.OUTGOING':          'Outgoing Internet Access',
+  'ZONE.INTERNAL_INCOMING': 'Incoming, Internal and VPN Traffic',
+};
+
+const ORIGIN_LABELS: Record<string, string> = {
+  'RULE_ORIGIN.SMP_PRE':   'SMP Pre-Policy Rules',
+  'RULE_ORIGIN.MANUAL':    'Policy Rules',
+  'RULE_ORIGIN.SMP_POST':  'SMP Post-Policy Rules',
+  'RULE_ORIGIN.GENERATED': 'Auto Generated Rules',
+  'RULE_ORIGIN.IOT':       'IoT Rules',
+};
+
+type DisplayItem =
+  | { kind: 'zone';   key: string; label: string; collapsed: boolean }
+  | { kind: 'origin'; key: string; label: string; collapsed: boolean }
+  | { kind: 'rule';   rule: FirewallRule };
+
+function buildDisplayItems(
+  rules: FirewallRule[],
+  collapsedZones: Set<string>,
+  collapsedOrigins: Set<string>,
+): DisplayItem[] {
+  const items: DisplayItem[] = [];
+  let lastZone   = '';
+  let lastOrigin = '';
+
+  for (const rule of rules) {
+    const zone      = rule.zone   ?? '';
+    const origin    = rule.origin ?? '';
+    const zoneKey   = `zone-${zone}`;
+    const originKey = `origin-${zone}-${origin}`;
+
+    if (zone !== lastZone) {
+      const label = ZONE_LABELS[zone];
+      if (label) items.push({ kind: 'zone', key: zoneKey, label, collapsed: collapsedZones.has(zoneKey) });
+      lastZone   = zone;
+      lastOrigin = '';
+    }
+
+    // Zone collapsed — skip everything inside it
+    if (collapsedZones.has(zoneKey)) continue;
+
+    if (origin !== lastOrigin) {
+      const label = ORIGIN_LABELS[origin];
+      if (label) items.push({ kind: 'origin', key: originKey, label, collapsed: collapsedOrigins.has(originKey) });
+      lastOrigin = origin;
+    }
+
+    // Origin collapsed — skip rules inside it
+    if (ORIGIN_LABELS[origin] && collapsedOrigins.has(originKey)) continue;
+
+    items.push({ kind: 'rule', rule });
+  }
+  return items;
+}
+
+// ── New Rule Dropdown ────────────────────────────────────────────────────────
+
+type NewPosition = 'top' | 'bottom' | 'above' | 'below';
+
+interface NewRuleDropdownProps {
+  focusedRuleId: string | null;
+  onSelect: (position: NewPosition) => void;
+}
+
+function NewRuleDropdown({ focusedRuleId, onSelect }: NewRuleDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: KeyboardEvent) { if (e.key === 'Escape') setOpen(false); }
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open]);
+
+  const items: { position: NewPosition; label: string; disabled?: boolean }[] = [
+    { position: 'top',    label: 'Top Rule' },
+    { position: 'bottom', label: 'Bottom Rule' },
+    { position: 'above',  label: 'Above Selected', disabled: !focusedRuleId },
+    { position: 'below',  label: 'Below Selected', disabled: !focusedRuleId },
+  ];
+
+  return (
+    <div className="new-rule-dropdown" ref={ref}>
+      <Button
+        variant="primary"
+        onClick={() => setOpen(v => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        ✦ New &nbsp;▾
+      </Button>
+      {open && (
+        <div className="new-rule-dropdown-menu" role="menu">
+          {items.map(item => (
+            <button
+              key={item.position}
+              className="new-rule-dropdown-item"
+              role="menuitem"
+              disabled={item.disabled}
+              onClick={() => {
+                setOpen(false);
+                onSelect(item.position);
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
+
 export function RuleTable() {
   const dispatch = useAppDispatch();
-  const { ruleModalOpen, selectedRuleId, policyInstall } = useAppSelector(s => s.security);
-  const { data: serverRules = EMPTY_RULES, isLoading, isError, error, refetch } = useFirewallRules();
+  const { ruleModalOpen, selectedRuleId, newRuleGatewayDefaults, focusedRuleId, policyInstall, lastSavedRuleId } =
+    useAppSelector(s => s.security);
+  const { data: serverRules = EMPTY_RULES, isLoading, isRefetching, isError, error, refetch } = useFirewallRules();
 
   // ── Local ordered copy for instant visual feedback ──────────
   const [orderedRules, setOrderedRules] = useState<FirewallRule[]>(serverRules);
   const [pendingReorder, setPendingReorder] = useState(false);
 
-  // Sync from server whenever data changes (rule added/deleted/server refresh)
+  // Sync from server whenever data changes (rule added/deleted/server refresh).
+  // ZONE.NONE rules are structural/internal — strip them from the visible list.
   useEffect(() => {
-    setOrderedRules(serverRules);
+    setOrderedRules(serverRules.filter(r => r.zone !== 'ZONE.NONE'));
     setPendingReorder(false);
   }, [serverRules]);
+
+  // ── Row highlight (create or edit) ──────────────────────────
+  // Two separate effects to avoid a timer-cancellation bug:
+  // If both "consume lastSavedRuleId" and "manage the timer" lived in one effect,
+  // any side-effect that changes lastSavedRuleId (e.g. clearSavedRuleId dispatch)
+  // would re-run the effect, causing its own cleanup to cancel the timer.
+  const [highlightedRuleId, setHighlightedRuleId] = useState<string | null>(null);
+
+  // Effect 1 — copy Redux value into local state (no timer, no cleanup side-effects).
+  useEffect(() => {
+    if (lastSavedRuleId) setHighlightedRuleId(lastSavedRuleId);
+  }, [lastSavedRuleId]);
+
+  // Effect 2 — own the 2.4s timer; its cleanup only fires when highlightedRuleId
+  // changes (next save), NOT due to unrelated Redux changes.
+  useEffect(() => {
+    if (!highlightedRuleId) return;
+    const timer = setTimeout(() => setHighlightedRuleId(null), 2400);
+    return () => clearTimeout(timer);
+  }, [highlightedRuleId]);
+
+  // ── Section collapse state ───────────────────────────────────
+  const [collapsedZones,   setCollapsedZones]   = useState<Set<string>>(new Set());
+  const [collapsedOrigins, setCollapsedOrigins] = useState<Set<string>>(new Set());
+
+  function toggleZone(key: string) {
+    setCollapsedZones(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
+
+  function toggleOrigin(key: string) {
+    setCollapsedOrigins(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
 
   // The id of the rule currently being dragged (drives DragOverlay)
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -106,17 +279,56 @@ export function RuleTable() {
   // ── Row callbacks ────────────────────────────────────────────
   const onEdit   = (id: string) => dispatch(openEditRule(id));
   const onDelete = (id: string) => dispatch({ type: 'security/deleteRule', payload: id });
+  const onFocus  = (id: string) => dispatch(setFocusedRule(id));
+
+  function handleNewRule(position: NewPosition) {
+    dispatch({
+      type: 'security/openNewRule',
+      payload: { position, focusedRuleId },
+    });
+  }
 
   const installing = policyInstall.status === 'installing';
   const selected   = orderedRules.find(r => r.id === selectedRuleId);
 
+  // Only pass visible rule IDs to SortableContext — collapsed sections hide rows but their
+  // IDs would still be in orderedRules. dnd-kit requires every id in `items` to have a
+  // registered droppable element; missing ones break collision detection.
+  const displayItems = buildDisplayItems(orderedRules, collapsedZones, collapsedOrigins);
+  const sortableIds  = displayItems.filter(i => i.kind === 'rule').map(i => i.rule.id);
+
   return (
-    <div>
+    <div className="fw-page">
       <PageHeader
         title="Firewall Rules"
         subtitle="Access control policy — drag rows to reorder, then install policy"
         actions={
           <>
+            <Button
+              variant="secondary"
+              onClick={() => refetch()}
+              loading={isRefetching}
+              title="Reload rules from gateway"
+            >
+              <RefreshCw size={13} style={{ marginRight: isRefetching ? 0 : 5 }} />
+              {!isRefetching && 'Refresh'}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!focusedRuleId}
+              onClick={() => focusedRuleId && onEdit(focusedRuleId)}
+              title={focusedRuleId ? 'Edit selected rule' : 'Click a rule row to select it first'}
+            >
+              ✎ Edit
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!focusedRuleId}
+              onClick={() => focusedRuleId && onDelete(focusedRuleId)}
+              title={focusedRuleId ? 'Delete selected rule' : 'Click a rule row to select it first'}
+            >
+              🗑 Delete
+            </Button>
             <Button
               variant="secondary"
               onClick={() => dispatch({ type: 'security/installPolicy' })}
@@ -126,9 +338,7 @@ export function RuleTable() {
                 ? `Installing… ${policyInstall.progress ?? 0}%`
                 : '▶ Install Policy'}
             </Button>
-            <Button variant="primary" onClick={() => dispatch(openAddRule())}>
-              + Add Rule
-            </Button>
+            <NewRuleDropdown focusedRuleId={focusedRuleId} onSelect={handleNewRule} />
           </>
         }
       />
@@ -162,6 +372,7 @@ export function RuleTable() {
         </div>
       )}
 
+      <div className="fw-page-body">
       {isLoading ? (
         <div className="loading-box"><span className="spinner" /><span>Loading rules…</span></div>
       ) : isError ? (
@@ -187,7 +398,7 @@ export function RuleTable() {
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+            modifiers={[restrictToVerticalAxis]}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
@@ -210,17 +421,38 @@ export function RuleTable() {
                 </thead>
                 <tbody>
                   <SortableContext
-                    items={orderedRules.map(r => r.id)}
+                    items={sortableIds}
                     strategy={verticalListSortingStrategy}
                   >
-                    {orderedRules.map(rule => (
-                      <DraggableRuleRow
-                        key={rule.id}
-                        rule={rule}
-                        onEdit={onEdit}
-                        onDelete={onDelete}
-                      />
-                    ))}
+                    {displayItems.map(item => {
+                      if (item.kind === 'zone') return (
+                        <tr key={item.key} className="fw-zone-header" onClick={() => toggleZone(item.key)}>
+                          <td colSpan={10}>
+                            <span className={`fw-section-chevron ${item.collapsed ? 'fw-section-chevron--collapsed' : ''}`}>▾</span>
+                            {item.label}
+                          </td>
+                        </tr>
+                      );
+                      if (item.kind === 'origin') return (
+                        <tr key={item.key} className="fw-origin-header" onClick={() => toggleOrigin(item.key)}>
+                          <td colSpan={10}>
+                            <span className={`fw-section-chevron ${item.collapsed ? 'fw-section-chevron--collapsed' : ''}`}>▾</span>
+                            {item.label}
+                          </td>
+                        </tr>
+                      );
+                      return (
+                        <DraggableRuleRow
+                          key={item.rule.id}
+                          rule={item.rule}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                          onFocus={onFocus}
+                          focused={focusedRuleId === item.rule.id}
+                          highlight={item.rule.id === highlightedRuleId}
+                        />
+                      );
+                    })}
                   </SortableContext>
                 </tbody>
               </table>
@@ -248,13 +480,14 @@ export function RuleTable() {
           </DndContext>
         </div>
       )}
+      </div>
 
       <Modal
         open={ruleModalOpen}
         title={selected ? `Edit Rule — ${selected.name}` : 'Add Firewall Rule'}
         onClose={() => dispatch({ type: 'security/closeRuleModal' })}
       >
-        <RuleForm initial={selected} />
+        <RuleForm initial={selected} gatewayDefaults={newRuleGatewayDefaults} />
       </Modal>
     </div>
   );

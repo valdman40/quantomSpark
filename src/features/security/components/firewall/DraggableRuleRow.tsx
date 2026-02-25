@@ -2,12 +2,16 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Badge } from '../../../../components/common/Badge';
 import { Button } from '../../../../components/common/Button';
+import { Chip } from '../../../../components/common/Chip';
 import type { FirewallRule } from '../../../../types/security';
 
 interface Props {
   rule: FirewallRule;
-  onEdit:   (id: string) => void;
-  onDelete: (id: string) => void;
+  onEdit:    (id: string) => void;
+  onDelete:  (id: string) => void;
+  onFocus?:  (id: string) => void;
+  focused?:  boolean;
+  highlight?: boolean;
   /** When true the row is rendered inside DragOverlay (no sensors, no ref) */
   overlay?: boolean;
 }
@@ -18,7 +22,7 @@ function actionVariant(action: string) {
   return 'neutral' as const;
 }
 
-export function DraggableRuleRow({ rule, onEdit, onDelete, overlay = false }: Props) {
+export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = false, highlight = false, overlay = false }: Props) {
   const {
     attributes,
     listeners,
@@ -35,11 +39,23 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, overlay = false }: Pr
         transition,
       };
 
+  function handleRowClick(e: React.MouseEvent) {
+    // Don't steal clicks on buttons or the drag handle
+    if ((e.target as HTMLElement).closest('button, .drag-handle')) return;
+    onFocus?.(rule.id);
+  }
+
   return (
     <tr
       ref={overlay ? undefined : setNodeRef}
       style={style}
-      className={isDragging ? 'rule-row-dragging' : overlay ? 'rule-row-overlay' : undefined}
+      className={[
+        isDragging          ? 'rule-row-dragging'  : '',
+        overlay             ? 'rule-row-overlay'   : '',
+        focused && !overlay ? 'rule-row--selected' : '',
+        highlight && !overlay ? 'fw-rule--highlight' : '',
+      ].filter(Boolean).join(' ') || undefined}
+      onClick={overlay ? undefined : handleRowClick}
       {...(overlay ? {} : attributes)}
     >
       {/* ── Drag handle ── */}
@@ -63,7 +79,28 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, overlay = false }: Pr
       {/* ── Match columns ── */}
       <td className="mono">{rule.source.join(', ')}</td>
       <td className="mono">{rule.destination.join(', ')}</td>
-      <td className="mono">{rule.service.join(', ')}</td>
+      <td>
+        <div className="svc-list">
+          {rule.service.map((svc, i) =>
+            svc.name === 'Any' ? (
+              <span key={i} className="text-muted">Any</span>
+            ) : (
+              <Chip
+                key={i}
+                label={svc.name}
+                icon={svc.appId != null ? (
+                  <img
+                    src={`https://sc1.checkpoint.com/za/images/facetime/small_png/${svc.appId}_sml.png`}
+                    alt=""
+                    onError={e => { e.currentTarget.style.display = 'none'; }}
+                  />
+                ) : undefined}
+                tooltip={{ description: svc.description, tags: svc.tags }}
+              />
+            )
+          )}
+        </div>
+      </td>
 
       {/* ── Action ── */}
       <td><Badge variant={actionVariant(rule.action)}>{rule.action}</Badge></td>
