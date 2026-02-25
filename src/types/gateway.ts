@@ -47,6 +47,8 @@ export interface GatewayNetworkObject {
   modified: string | [];
   comments: string | [];
   show: boolean | [];
+  /** Member objects — populated for group types (networkObjectsGroup). */
+  networkObjects?: GatewayNetworkObject[];
 }
 
 /** A service or application that appears in the appsAndServices list. */

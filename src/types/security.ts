@@ -1,6 +1,26 @@
 export type RuleAction = 'Accept' | 'Drop' | 'Reject' | 'Encrypt';
 export type TrackOption = 'None' | 'Log' | 'Alert' | 'Mail';
 
+/** A single network object inside a group tooltip (non-recursive). */
+export interface NetworkMember {
+  name: string;
+  /** Raw `_icon` or `type` string — mapped to a lucide icon in the UI. */
+  iconKey?: string;
+}
+
+/** A source or destination network object in a firewall rule. */
+export interface NetworkItem {
+  name: string;
+  /** Raw `_icon` / `__tblName` from the gateway — mapped to a lucide icon in the UI. */
+  iconKey?: string;
+  /** Human-readable type label (e.g. "Network object group", "Host"). */
+  type?: string;
+  /** From the gateway `comments` field. */
+  description?: string;
+  /** Populated for group objects — the member network objects. */
+  members?: NetworkMember[];
+}
+
 /** A service or application entry in the Service column. */
 export interface ServiceItem {
   name: string;
@@ -16,8 +36,8 @@ export interface FirewallRule {
   id: string;
   number: number;
   name: string;
-  source: string[];
-  destination: string[];
+  source: NetworkItem[];
+  destination: NetworkItem[];
   service: ServiceItem[];
   action: RuleAction;
   track: TrackOption;

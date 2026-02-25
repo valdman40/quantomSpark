@@ -19,6 +19,8 @@ import type {
 } from '../../../types/gateway';
 import type {
   FirewallRule,
+  NetworkItem,
+  NetworkMember,
   RuleAction,
   ServiceItem,
   TrackOption,
@@ -52,13 +54,36 @@ function mapTrack(raw: string): TrackOption {
   return TRACK_MAP[raw] ?? 'None';
 }
 
-// ─── Name extraction helpers ──────────────────────────────────────────────────
+// ─── Network object helpers ───────────────────────────────────────────────────
 
-function extractNetworkNames(arr: GatewayNetworkObject[] | unknown): string[] {
-  if (!Array.isArray(arr) || arr.length === 0) return ['Any'];
-  return (arr as GatewayNetworkObject[]).map(
-    (o) => o.displayName || o.name || 'Unknown'
-  );
+const NETWORK_TYPE_LABELS: Record<string, string> = {
+  'networkObjectsGroup':                'Network object group',
+  'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP': 'Host',
+  'NETWORKOBJECT_BASIC_TYPE.NETWORK':   'Network',
+  'NETWORKOBJECT_BASIC_TYPE.RANGE':     'IP Range',
+  'NETWORKOBJECT_BASIC_TYPE.DOMAIN':    'Domain',
+  'NETWORKOBJECT_BASIC_TYPE.WILDCARD':  'Wildcard',
+};
+
+function extractNetworkItems(arr: GatewayNetworkObject[] | unknown): NetworkItem[] {
+  if (!Array.isArray(arr) || arr.length === 0) return [{ name: 'Any' }];
+  return (arr as GatewayNetworkObject[]).map(o => {
+    const iconKey = o._icon || o.__tblName || undefined;
+    const members: NetworkMember[] | undefined =
+      Array.isArray(o.networkObjects) && o.networkObjects.length > 0
+        ? o.networkObjects.map(m => ({
+            name:    m.displayName || m.name || 'Unknown',
+            iconKey: m._icon || m.type || undefined,
+          }))
+        : undefined;
+    return {
+      name:        o.displayName || o.name || 'Unknown',
+      iconKey,
+      type:        NETWORK_TYPE_LABELS[o._icon] ?? NETWORK_TYPE_LABELS[o.__tblName] ?? undefined,
+      description: typeof o.comments === 'string' && o.comments ? o.comments : undefined,
+      members,
+    };
+  });
 }
 
 function extractServices(arr: GatewayService[] | unknown): ServiceItem[] {
@@ -166,8 +191,8 @@ export function normalizeFirewallRules(
     id: raw.__pk,
     number: index + 1,
     name: raw.name,
-    source: extractNetworkNames(raw.sources),
-    destination: extractNetworkNames(raw.destinations),
+    source:      extractNetworkItems(raw.sources),
+    destination: extractNetworkItems(raw.destinations),
     service: extractServices(raw.appsAndServices),
     action: mapAction(raw.action),
     track: mapTrack(raw.log),

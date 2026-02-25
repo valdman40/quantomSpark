@@ -258,9 +258,14 @@ input, select, textarea { font-family: inherit; }
 .chip-tooltip-icon      { display: flex; align-items: center; flex-shrink: 0; }
 .chip-tooltip-icon img  { width: 18px; height: 18px; object-fit: contain; border-radius: 2px; display: block; }
 .chip-tooltip-title     { font-weight: 600; font-size: 0.85rem; color: var(--text); }
-.chip-tooltip-row       { display: flex; gap: 8px; font-size: 0.78rem; line-height: 1.45; }
-.chip-tooltip-key       { flex-shrink: 0; font-weight: 500; color: var(--text-muted); min-width: 76px; }
-.chip-tooltip-val       { color: var(--text); white-space: normal; word-break: break-word; }
+.chip-tooltip-row            { display: flex; gap: 8px; font-size: 0.78rem; line-height: 1.45; }
+.chip-tooltip-row--members   { align-items: flex-start; }
+.chip-tooltip-key            { flex-shrink: 0; font-weight: 500; color: var(--text-muted); min-width: 102px; }
+.chip-tooltip-val            { color: var(--text); white-space: normal; word-break: break-word; }
+.chip-tooltip-members        { display: flex; flex-wrap: wrap; gap: 4px; }
+/* Mini chip variant used inside tooltips */
+.chip--mini                  { padding: 1px 6px 1px 4px; font-size: 0.72rem; }
+.chip--mini .chip-icon svg   { width: 12px; height: 12px; }
 
 /* ─── Service column chip list ───────────────────────────── */
 .svc-list   { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 4px 0; }

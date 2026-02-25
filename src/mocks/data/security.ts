@@ -1,4 +1,24 @@
-import type { FirewallRule, NatRule } from '../../types/security';
+import type { FirewallRule, NatRule, NetworkItem } from '../../types/security';
+
+// ─── Network object lookup (simulates normalized gateway objects) ──────────────
+const NET: Record<string, NetworkItem> = {
+  Any:              { name: 'Any' },
+  LAN:              { name: 'LAN',              type: 'Network',              iconKey: 'NETWORKOBJECT_BASIC_TYPE.NETWORK' },
+  Internet:         { name: 'Internet',          type: 'Zone',                 iconKey: 'NETWORKOBJECT_BASIC_TYPE.ZONE' },
+  DMZ:              { name: 'DMZ',               type: 'Network',              iconKey: 'NETWORKOBJECT_BASIC_TYPE.NETWORK' },
+  'DMZ-WebServer':  { name: 'DMZ-WebServer',     type: 'Host',                 iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' },
+  'Checkpoint-GW':  { name: 'Checkpoint-GW',     type: 'Host',                 iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' },
+  VPN_RA_Community: { name: 'VPN_RA_Community',  type: 'VPN Community',        iconKey: 'NETWORKOBJECT_BASIC_TYPE.NETWORK' },
+  'LAN-Users':      { name: 'LAN-Users',         type: 'Network object group', iconKey: 'networkObjectsGroup',
+                      members: [{ name: 'Mgmt-PC', iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' }, { name: 'Dev-Workstation', iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' }] },
+  'DMZ-Servers':    { name: 'DMZ-Servers',       type: 'Network object group', iconKey: 'networkObjectsGroup',
+                      members: [{ name: 'Web-01', iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' }, { name: 'Mail-01', iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' }, { name: 'DB-01', iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' }] },
+  WAN:              { name: 'WAN',               type: 'Network',              iconKey: 'NETWORKOBJECT_BASIC_TYPE.NETWORK' },
+};
+
+function net(name: string): NetworkItem {
+  return NET[name] ?? { name };
+}
 
 // ─── Firewall Rules (60 rows, full list for DnD) ───────────────────────────────
 const FW_ACTIONS  = ['Accept', 'Drop', 'Encrypt', 'Reject'] as const;
@@ -8,13 +28,13 @@ const DESTS       = ['Internet', 'LAN', 'DMZ-WebServer', 'Checkpoint-GW', 'Any',
 const SERVICES_FW = ['Any', 'HTTP', 'HTTPS', 'DNS', 'SSH', 'RDP', 'SMTP', 'FTP', 'BitTorrent,eDonkey', 'SMB'];
 
 export let mockFirewallRules: FirewallRule[] = [
-  { id: 'fr-1', number: 1,  name: 'Allow LAN to Internet',    source: ['LAN'],               destination: ['Internet'],      service: [{ name: 'Any' }],                            action: 'Accept',  track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Outbound internet access' },
-  { id: 'fr-2', number: 2,  name: 'Allow DNS',                source: ['LAN'],               destination: ['Any'],           service: [{ name: 'DNS', description: 'Domain Name System — translates hostnames to IP addresses. Operates on UDP/TCP port 53.', tags: ['Infrastructure', 'UDP', 'TCP', 'Port 53'] }], action: 'Accept', track: 'None', enabled: true, installedOn: ['All'] },
-  { id: 'fr-3', number: 3,  name: 'Block P2P',                source: ['LAN'],               destination: ['Any'],           service: [{ name: 'BitTorrent', description: 'BitTorrent is a peer-to-peer file sharing protocol. Can consume high bandwidth and bypass standard port filtering.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'Medium Risk'] }, { name: 'eDonkey', description: 'eDonkey2000 (also known as eDonkey2000 Network) is a decentralized peer-to-peer file sharing network. Associated with copyright-infringing downloads.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'High Risk'] }], action: 'Drop', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Block peer-to-peer applications' },
-  { id: 'fr-4', number: 4,  name: 'Allow DMZ Web',            source: ['Internet'],          destination: ['DMZ-WebServer'], service: [{ name: 'HTTP', description: 'Hypertext Transfer Protocol — unencrypted web traffic. Operates on TCP port 80.', tags: ['Web', 'TCP', 'Port 80', 'Unencrypted'] }, { name: 'HTTPS', description: 'HTTP Secure — encrypted web traffic using TLS/SSL. Operates on TCP port 443.', tags: ['Web', 'TCP', 'Port 443', 'Encrypted', 'SSL/TLS'] }], action: 'Accept', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Inbound web traffic to DMZ' },
-  { id: 'fr-5', number: 5,  name: 'Allow VPN Remote Access',  source: ['VPN_RA_Community'],  destination: ['LAN'],           service: [{ name: 'Any' }],                            action: 'Encrypt', track: 'Log',   enabled: true,  installedOn: ['All'] },
-  { id: 'fr-6', number: 6,  name: 'Stealth Rule',             source: ['Any'],               destination: ['Checkpoint-GW'], service: [{ name: 'Any' }],                            action: 'Drop',    track: 'Alert', enabled: true,  installedOn: ['All'], comment: 'Protect the gateway itself' },
-  { id: 'fr-7', number: 7,  name: 'Cleanup Rule',             source: ['Any'],               destination: ['Any'],           service: [{ name: 'Any' }],                            action: 'Drop',    track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Drop everything else' },
+  { id: 'fr-1', number: 1, name: 'Allow LAN to Internet',   source: [net('LAN')],              destination: [net('Internet')],     service: [{ name: 'Any' }],                             action: 'Accept',  track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Outbound internet access' },
+  { id: 'fr-2', number: 2, name: 'Allow DNS',               source: [net('LAN')],              destination: [net('Any')],          service: [{ name: 'DNS', description: 'Domain Name System — translates hostnames to IP addresses. Operates on UDP/TCP port 53.', tags: ['Infrastructure', 'UDP', 'TCP', 'Port 53'] }], action: 'Accept', track: 'None', enabled: true, installedOn: ['All'] },
+  { id: 'fr-3', number: 3, name: 'Block P2P',               source: [net('LAN')],              destination: [net('Any')],          service: [{ name: 'BitTorrent', description: 'BitTorrent is a peer-to-peer file sharing protocol. Can consume high bandwidth and bypass standard port filtering.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'Medium Risk'] }, { name: 'eDonkey', description: 'eDonkey2000 is a decentralized peer-to-peer file sharing network. Associated with copyright-infringing downloads.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'High Risk'] }], action: 'Drop', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Block peer-to-peer applications' },
+  { id: 'fr-4', number: 4, name: 'Allow DMZ Web',           source: [net('Internet')],         destination: [net('DMZ-WebServer')], service: [{ name: 'HTTP', description: 'Hypertext Transfer Protocol — unencrypted web traffic. Operates on TCP port 80.', tags: ['Web', 'TCP', 'Port 80', 'Unencrypted'] }, { name: 'HTTPS', description: 'HTTP Secure — encrypted web traffic using TLS/SSL. Operates on TCP port 443.', tags: ['Web', 'TCP', 'Port 443', 'Encrypted', 'SSL/TLS'] }], action: 'Accept', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Inbound web traffic to DMZ' },
+  { id: 'fr-5', number: 5, name: 'Allow VPN Remote Access', source: [net('VPN_RA_Community')], destination: [net('LAN')],          service: [{ name: 'Any' }],                             action: 'Encrypt', track: 'Log',   enabled: true,  installedOn: ['All'] },
+  { id: 'fr-6', number: 6, name: 'Stealth Rule',            source: [net('Any')],              destination: [net('Checkpoint-GW')],service: [{ name: 'Any' }],                             action: 'Drop',    track: 'Alert', enabled: true,  installedOn: ['All'], comment: 'Protect the gateway itself' },
+  { id: 'fr-7', number: 7, name: 'Cleanup Rule',            source: [net('Any')],              destination: [net('Any')],          service: [{ name: 'Any' }],                             action: 'Drop',    track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Drop everything else' },
   ...Array.from({ length: 53 }, (_, i): FirewallRule => {
     const n      = i + 8;
     const src    = SOURCES[n % SOURCES.length];
@@ -26,8 +46,8 @@ export let mockFirewallRules: FirewallRule[] = [
       id: `fr-${n}`,
       number: n,
       name: `Rule ${n} — ${src} to ${dst}`,
-      source: [src],
-      destination: [dst],
+      source:      [net(src)],
+      destination: [net(dst)],
       service: [{ name: svc }],
       action,
       track,

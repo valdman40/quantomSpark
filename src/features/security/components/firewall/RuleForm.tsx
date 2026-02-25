@@ -51,8 +51,8 @@ export function RuleForm({ initial, gatewayDefaults }: Props) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     defaultValues: {
       name:            base?.name                    ?? '',
-      sourceText:      base?.source?.join(', ')      ?? 'Any',
-      destinationText: base?.destination?.join(', ') ?? 'Any',
+      sourceText:      base?.source?.map(s => s.name).join(', ')      ?? 'Any',
+      destinationText: base?.destination?.map(s => s.name).join(', ') ?? 'Any',
       serviceText:     base?.service?.map(s => s.name).join(', ') ?? 'Any',
       action:          base?.action                  ?? 'Drop',
       track:           base?.track                   ?? 'Log',
@@ -64,8 +64,8 @@ export function RuleForm({ initial, gatewayDefaults }: Props) {
   const onSubmit = (data: FormData) => {
     const payload: Partial<FirewallRule> = {
       name:        data.name,
-      source:      data.sourceText.split(',').map(s => s.trim()).filter(Boolean),
-      destination: data.destinationText.split(',').map(s => s.trim()).filter(Boolean),
+      source:      data.sourceText.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name })),
+      destination: data.destinationText.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name })),
       service:     data.serviceText.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name })),
       action:      data.action,
       track:       data.track,

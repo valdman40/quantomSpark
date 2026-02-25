@@ -1,5 +1,14 @@
+import { type ReactNode } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+  ArrowLeftRight,
+  Globe,
+  Layers,
+  Network,
+  Server,
+  ShieldCheck,
+} from 'lucide-react';
 import { Badge } from '../../../../components/common/Badge';
 import { Button } from '../../../../components/common/Button';
 import { Chip } from '../../../../components/common/Chip';
@@ -20,6 +29,18 @@ function actionVariant(action: string) {
   if (action === 'Accept' || action === 'Encrypt') return 'success' as const;
   if (action === 'Drop'   || action === 'Reject')  return 'error'   as const;
   return 'neutral' as const;
+}
+
+/** Maps a gateway `_icon` / `__tblName` / `type` string to a lucide icon (size 14). */
+function networkIcon(iconKey?: string): ReactNode {
+  if (!iconKey) return <Globe size={14} />;
+  if (iconKey === 'networkObjectsGroup')      return <Layers size={14} />;
+  if (iconKey.includes('SINGLE_IP'))          return <Server size={14} />;
+  if (iconKey.includes('NETWORK') || iconKey.includes('SUBNET')) return <Network size={14} />;
+  if (iconKey.includes('RANGE'))              return <ArrowLeftRight size={14} />;
+  if (iconKey.includes('DOMAIN') || iconKey.includes('FQDN')) return <Globe size={14} />;
+  if (iconKey.includes('ZONE'))               return <ShieldCheck size={14} />;
+  return <Globe size={14} />;
 }
 
 export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = false, highlight = false, overlay = false }: Props) {
@@ -76,9 +97,43 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
       {/* ── Name ── */}
       <td style={{ fontWeight: 500, opacity: rule.enabled ? 1 : 0.5 }}>{rule.name}</td>
 
-      {/* ── Match columns ── */}
-      <td className="mono">{rule.source.join(', ')}</td>
-      <td className="mono">{rule.destination.join(', ')}</td>
+      {/* ── Source ── */}
+      <td>
+        <div className="svc-list">
+          {rule.source.map((item, i) =>
+            item.name === 'Any' ? (
+              <span key={i} className="text-muted">Any</span>
+            ) : (
+              <Chip
+                key={i}
+                label={item.name}
+                icon={networkIcon(item.iconKey)}
+                tooltip={{ type: item.type, description: item.description, members: item.members }}
+              />
+            )
+          )}
+        </div>
+      </td>
+
+      {/* ── Destination ── */}
+      <td>
+        <div className="svc-list">
+          {rule.destination.map((item, i) =>
+            item.name === 'Any' ? (
+              <span key={i} className="text-muted">Any</span>
+            ) : (
+              <Chip
+                key={i}
+                label={item.name}
+                icon={networkIcon(item.iconKey)}
+                tooltip={{ type: item.type, description: item.description, members: item.members }}
+              />
+            )
+          )}
+        </div>
+      </td>
+
+      {/* ── Service ── */}
       <td>
         <div className="svc-list">
           {rule.service.map((svc, i) =>
