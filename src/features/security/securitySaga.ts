@@ -211,7 +211,7 @@ function* deleteRuleSaga(action: { type: string; payload: string }) {
 }
 
 /**
- * Simulates a multi-step policy install flow — a hallmark of Check Point UI.
+ * Simulates a multi-step policy install flow — a hallmark of Roy Point UI.
  * Progress ticks: compile → verify → push → done
  */
 function* installPolicySaga() {
@@ -239,11 +239,29 @@ function* installPolicySaga() {
  * The component already applied an optimistic update via queryClient.setQueryData —
  * this saga only syncs to the server and rolls back on failure.
  */
-function* reorderRulesSaga(action: { type: string; payload: { ruleIds: string[] } }) {
+function* reorderRulesSaga(action: { type: string; payload: { ruleIds: string[]; movedRuleId: string; newIdx: number } }) {
+  const { ruleIds, movedRuleId, newIdx } = action.payload;
   try {
-    yield call([apiClient, 'patch'], ENDPOINTS.security.reorderRules, {
-      ruleIds: action.payload.ruleIds,
-    });
+    if (USE_REAL_API) {
+      const rawRules = queryClient.getQueryData<GatewayFwRule[]>(queryKeys.security.rawRules()) ?? [];
+      const normRules = queryClient.getQueryData<FirewallRule[]>(queryKeys.security.rules()) ?? [];
+      const normRule  = normRules.find(r => r.id === movedRuleId);
+      if (!normRule?.nativeId) {
+        throw new Error(`Cannot reorder rule ${movedRuleId}: missing nativeId`);
+      }
+      const rawRule = rawRules.find(r => r.__id === normRule.nativeId);
+      if (!rawRule) {
+        throw new Error(`Cannot reorder rule ${movedRuleId}: raw gateway record not found`);
+      }
+      // Send the full original gateway object with only idx changed
+      yield call([gatewayClient, 'updateRule'], { ...rawRule, idx: newIdx });
+    } else {
+      yield call([apiClient, 'patch'], ENDPOINTS.security.reorderRules, {
+        ruleIds,
+        movedRuleId,
+        newIdx,
+      });
+    }
     // Server accepted the new order — no need to invalidate (cache already optimistic)
   } catch (err) {
     // Roll back: invalidate so React Query re-fetches the authoritative server order

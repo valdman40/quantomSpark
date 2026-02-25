@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -8,6 +8,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
 import {
@@ -22,6 +23,7 @@ import { AlertTriangle, RefreshCw, ShieldOff } from 'lucide-react';
 
 import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
 import { openEditRule, setFocusedRule } from '../../securitySlice';
+import { addNotification } from '../../../../app/uiSlice';
 import { useFirewallRules } from '../../hooks/useFirewallRules';
 import { queryClient } from '../../../../app/queryClient';
 import { queryKeys } from '../../../../services/queryKeys';
@@ -228,6 +230,21 @@ export function RuleTable() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeRule = orderedRules.find(r => r.id === activeId) ?? null;
 
+  // The id of the rule the dragged item is hovering over
+  const [overId, setOverId] = useState<string | null>(null);
+
+  // Legal = dragged rule and hovered rule share the same zone + origin
+  const isDragLegal: boolean | null = useMemo(() => {
+    if (!activeId || !overId) return null;
+    const draggedRule = orderedRules.find(r => r.id === activeId);
+    const overRule    = orderedRules.find(r => r.id === overId);
+    if (!draggedRule || !overRule) return null;
+    return (
+      (draggedRule.zone   ?? '') === (overRule.zone   ?? '') &&
+      (draggedRule.origin ?? '') === (overRule.origin ?? '')
+    );
+  }, [activeId, overId, orderedRules]);
+
   // ── Sensors ─────────────────────────────────────────────────
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -242,18 +259,50 @@ export function RuleTable() {
   // ── Handlers ────────────────────────────────────────────────
   function handleDragStart({ active }: DragStartEvent) {
     setActiveId(active.id as string);
+    setOverId(null);
+  }
+
+  function handleDragOver({ over }: DragOverEvent) {
+    setOverId((over?.id as string) ?? null);
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveId(null);
+    setOverId(null);
+
     if (!over || active.id === over.id) return;
 
+    // Block cross-section drops
+    if (isDragLegal === false) {
+      dispatch(addNotification({ type: 'error', message: 'Rules cannot be moved between different zones or policy sections.' }));
+      return;
+    }
+
     setOrderedRules(prev => {
-      const oldIdx = prev.findIndex(r => r.id === active.id);
-      const newIdx = prev.findIndex(r => r.id === over.id);
+      const fromPos = prev.findIndex(r => r.id === active.id);
+      const toPos   = prev.findIndex(r => r.id === over.id);
+
       // Reassign `number` to match the new visual position (1-based)
-      const reordered = arrayMove(prev, oldIdx, newIdx)
+      const reordered = arrayMove(prev, fromPos, toPos)
         .map((rule, i) => ({ ...rule, number: i + 1 }));
+
+      const moved = reordered[toPos];
+
+      // Compute fractional idx midpoint between neighbours in the same section
+      const section   = reordered.filter(r =>
+        (r.zone   ?? '') === (moved.zone   ?? '') &&
+        (r.origin ?? '') === (moved.origin ?? ''));
+      const posInSect = section.findIndex(r => r.id === moved.id);
+      const prev2     = section[posInSect - 1] ?? null;
+      const next2     = section[posInSect + 1] ?? null;
+
+      let newFracIdx: number;
+      if (prev2 && next2) newFracIdx = ((prev2.idx ?? 0) + (next2.idx ?? (prev2.idx ?? 0) + 2)) / 2;
+      else if (prev2)     newFracIdx = (prev2.idx ?? 0) + 1;
+      else if (next2)     newFracIdx = (next2.idx ?? 2) / 2;
+      else                newFracIdx = 1;
+
+      reordered[toPos] = { ...reordered[toPos], idx: newFracIdx };
 
       // ① Optimistic: update the React Query cache immediately
       queryClient.setQueryData<FirewallRule[]>(
@@ -264,7 +313,7 @@ export function RuleTable() {
       // ② Persist via saga — rolls back on network error
       dispatch({
         type: 'security/reorderRules',
-        payload: { ruleIds: reordered.map(r => r.id) },
+        payload: { ruleIds: reordered.map(r => r.id), movedRuleId: moved.id, newIdx: newFracIdx },
       });
 
       setPendingReorder(true);
@@ -274,6 +323,7 @@ export function RuleTable() {
 
   function handleDragCancel() {
     setActiveId(null);
+    setOverId(null);
   }
 
   // ── Row callbacks ────────────────────────────────────────────
@@ -400,6 +450,7 @@ export function RuleTable() {
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
             onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
           >
@@ -472,6 +523,7 @@ export function RuleTable() {
                       onEdit={onEdit}
                       onDelete={onDelete}
                       overlay
+                      dragVariant={isDragLegal === true ? 'legal' : isDragLegal === false ? 'illegal' : undefined}
                     />
                   </tbody>
                 </table>

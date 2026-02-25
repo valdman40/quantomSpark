@@ -49,7 +49,7 @@ export function Support() {
             <MessageCircle size={14} color="var(--blue)" style={{ flexShrink: 0, marginTop: 2 }} />
             <span style={{ fontSize: '0.82rem' }}>
               <a href="#" style={{ color: 'var(--blue)' }}>Live Chat</a>
-              {' '}provides online support for quick questions about Check Point products and services.
+              {' '}provides online support for quick questions about Roy Point products and services.
             </span>
           </div>
 
@@ -95,7 +95,7 @@ export function Support() {
         <table style={{ fontSize: '0.82rem', borderSpacing: 0 }}>
           <tbody>
             {[
-              ['Appliance',            'Quantum Spark (Gateway-ID-569EFED1)'],
+              ['Appliance',            'New Spark (Gateway-ID-569EFED1)'],
               ['Security Management',  'Locally managed'],
               ['Version (firmware)',   'R82.00.15 (998001836)'],
               ['MAC address',          '00:50:56:9E:FE:D1'],

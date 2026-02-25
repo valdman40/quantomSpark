@@ -16,7 +16,7 @@ export const mockSystemOverview: SystemOverviewData = {
     diskPercent: 27,
     uptimeSeconds: 1_296_000,
     firmwareVersion: 'R81.20.10',
-    modelName: 'Quantum Spark 1500W',
+    modelName: 'New Spark 1500W',
     serialNumber: 'QS-2024-A8B3C1',
     managementIp: '192.168.1.1',
   },
@@ -94,7 +94,7 @@ export const mockSecurityDashboard: SecurityDashboardData = {
 // ─── Alert items (System Overview banner) ─────────────────────────────────────
 export const mockAlertItems: AlertItem[] = [
   { id: 'al1', message: 'Configure administrator email address and phone number', actionLabel: 'Administrators', actionPath: '/device/administrators' },
-  { id: 'al2', message: 'Connect to Check Point cloud services to get improved security', actionLabel: 'Cloud Services', actionPath: '/home/cloud-services' },
+  { id: 'al2', message: 'Connect to Roy Point cloud services to get improved security', actionLabel: 'Cloud Services', actionPath: '/home/cloud-services' },
   { id: 'al3', message: 'Backup your configuration', actionLabel: 'System Operations', actionPath: '/device/system-operations' },
   { id: 'al4', message: 'Enable automatic updates for latest security features', actionLabel: 'System Operations', actionPath: '/device/system-operations' },
   { id: 'al5', message: 'Set the correct date and time', actionLabel: 'Date and Time', actionPath: '/device/date-time' },

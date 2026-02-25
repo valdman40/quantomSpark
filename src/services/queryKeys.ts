@@ -29,6 +29,7 @@ export const queryKeys = {
   security: {
     all: () => ['security'] as const,
     rules: () => ['security', 'rules'] as const,
+    rawRules: () => ['security', 'rules', 'raw'] as const,
     nat: () => ['security', 'nat'] as const,
   },
 

@@ -59,12 +59,12 @@ export function Reports() {
             </div>
             <span style={{ fontSize: '1.4rem' }}>🔥</span>
             <div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>CHECK POINT</div>
-              <div style={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1 }}>Quantum</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>ROY POINT</div>
+              <div style={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1 }}>New</div>
             </div>
           </div>
           <div style={{ fontWeight: 700, fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ color: 'var(--brand)' }}>✓</span> CHECK POINT
+            <span style={{ color: 'var(--brand)' }}>✓</span> ROY POINT
           </div>
         </div>
 

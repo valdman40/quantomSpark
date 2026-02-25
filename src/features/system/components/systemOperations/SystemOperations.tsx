@@ -60,7 +60,7 @@ export function SystemOperations() {
             </div>
             <div className="sysop-status-row">
               <AlertTriangle size={13} color="var(--warning, #f59e0b)" />
-              <span>Connection to Check Point Firmware Upgrade Service failed</span>
+              <span>Connection to Roy Point Firmware Upgrade Service failed</span>
               <span>|</span>
               <a href="#" onClick={e => { e.preventDefault(); fire('Retrying firmware service connection…'); }}>
                 Try again

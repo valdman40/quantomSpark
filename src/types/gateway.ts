@@ -1,5 +1,5 @@
 /**
- * Types for the Quantum Spark gateway JSON-RPC API.
+ * Types for the New Spark gateway JSON-RPC API.
  *
  * Request format
  * ──────────────

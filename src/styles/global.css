@@ -424,6 +424,10 @@ select.form-control {
   white-space: nowrap;
 }
 
+/* Legal / illegal DragOverlay row colouring */
+.rule-row-drag-legal   td { background: #dcfce7 !important; opacity: 1 !important; }
+.rule-row-drag-illegal td { background: #fef2f2 !important; opacity: 1 !important; }
+
 /* ─── Firewall page — full-height flex layout ─────────────────── */
 .fw-page          { height: 100%; display: flex; flex-direction: column; }
 .fw-page-body     { flex: 1; min-height: 0; display: flex; flex-direction: column; }

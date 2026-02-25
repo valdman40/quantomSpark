@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { toggleSidebar, toggleMobileSidebar } from '../../app/uiSlice';
-import { CheckPointLogo } from '../../assets/CheckPointLogo';
+import { RoyPointLogo } from '../../assets/RoyPointLogo';
 
 export function TopBar() {
   const dispatch = useAppDispatch();
@@ -31,7 +31,7 @@ export function TopBar() {
           <Menu size={18} />
         </button>
 
-        {/* Quantum Spark brand mark */}
+        {/* New Spark brand mark */}
         <div className="topbar-brand">
           {/* Orange spark/flame icon */}
           <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
@@ -41,7 +41,7 @@ export function TopBar() {
               fill="#fff"
             />
           </svg>
-          <span className="topbar-brand-name">Quantum Spark</span>
+          <span className="topbar-brand-name">New Spark</span>
         </div>
 
         {/* Device chip */}
@@ -83,7 +83,7 @@ export function TopBar() {
         </button>
 
         <div className="topbar-divider" />
-        <CheckPointLogo variant="light" size={20} />
+        <RoyPointLogo variant="light" size={20} />
       </div>
     </header>
   );

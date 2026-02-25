@@ -1,5 +1,5 @@
 /**
- * HTTP client for the Quantum Spark gateway JSON-RPC API.
+ * HTTP client for the New Spark gateway JSON-RPC API.
  *
  * All requests are proxied through Vite's dev server (/gateway → https://{ip}:4434)
  * so the browser never hits the gateway directly — this solves both CORS and the

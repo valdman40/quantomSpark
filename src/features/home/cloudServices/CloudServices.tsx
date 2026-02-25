@@ -22,7 +22,7 @@ export function CloudServices() {
         <div>
           <h2 style={{ fontSize: '1rem', fontWeight: 600 }}>Cloud Services</h2>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-            Connect to Check Point cloud services to enhance security
+            Connect to Roy Point cloud services to enhance security
           </p>
         </div>
         <button

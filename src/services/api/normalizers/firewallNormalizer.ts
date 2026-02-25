@@ -1,5 +1,5 @@
 /**
- * Maps the verbose Quantum Spark gateway fwRule objects to the lean
+ * Maps the verbose New Spark gateway fwRule objects to the lean
  * FirewallRule type used by the rest of the UI.
  *
  * Gateway quirks handled here:

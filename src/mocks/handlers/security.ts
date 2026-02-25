@@ -49,17 +49,22 @@ export const securityHandlers = [
   // Reorder rules — receives an ordered array of rule IDs, rebuilds `number` fields
   http.patch('/api/security/rules/reorder', async ({ request }) => {
     await delay(200);
-    const { ruleIds } = await request.json() as { ruleIds: string[] };
+    const { ruleIds, movedRuleId, newIdx } = await request.json() as { ruleIds: string[]; movedRuleId?: string; newIdx?: number };
     // Rebuild `rules` in the supplied order, updating `number` to match position
     const reordered: FirewallRule[] = [];
-    ruleIds.forEach((id, idx) => {
+    ruleIds.forEach((id, i) => {
       const rule = rules.find(r => r.id === id);
-      if (rule) reordered.push({ ...rule, number: idx + 1 });
+      if (rule) reordered.push({ ...rule, number: i + 1 });
     });
     // Keep any rules not present in the payload at the end (safety net)
-    rules.filter(r => !ruleIds.includes(r.id)).forEach((r, idx) => {
-      reordered.push({ ...r, number: reordered.length + idx + 1 });
+    rules.filter(r => !ruleIds.includes(r.id)).forEach((r, i) => {
+      reordered.push({ ...r, number: reordered.length + i + 1 });
     });
+    // Apply fractional idx to the moved rule
+    if (movedRuleId != null && newIdx != null) {
+      const r = reordered.find(r => r.id === movedRuleId);
+      if (r) r.idx = newIdx;
+    }
     rules = reordered;
     return HttpResponse.json({ data: rules, status: 'ok' });
   }),

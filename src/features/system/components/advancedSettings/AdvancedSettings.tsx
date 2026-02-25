@@ -13,11 +13,11 @@ interface AdvSetting {
 }
 
 const SETTINGS: AdvSetting[] = [
-  { attribute: 'APPI policy - Bypass Check Point products', type: 'bool', value: 'true', description: 'Bypass Check Point products for Application Control default rules' },
+  { attribute: 'APPI policy - Bypass Roy Point products', type: 'bool', value: 'true', description: 'Bypass Roy Point products for Application Control default rules' },
   { attribute: 'Acceleration settings - Enable acceleration and exceptions', type: 'bool', value: 'true', description: 'Change the acceleration state (enable/disable) and add/remove exceptions' },
   { attribute: 'Admin Lockout - Mobile application session timeout', type: 'int', value: '30', description: 'Allowed mobile application session before automatic logout is executed (in days)' },
   { attribute: 'Admin Lockout - Mobile seamless login session timeout', type: 'int', value: '1', description: 'Allowed mobile application seamless login session before automatic logout is executed (in days)' },
-  { attribute: 'Administrators RADIUS authentication - Default Shell', type: 'options', value: 'Clish', description: 'Default shell for Super Administrators. To enable this feature, contact Check Point Support.' },
+  { attribute: 'Administrators RADIUS authentication - Default Shell', type: 'options', value: 'Clish', description: 'Default shell for Super Administrators. To enable this feature, contact Roy Point Support.' },
   { attribute: 'Administrators RADIUS authentication - Local authentication (RADIUS inaccessible)', type: 'bool', value: 'false', description: 'Perform local administrator authentication only if RADIUS server is not configured or is inaccessible.' },
   { attribute: 'Administrators RADIUS authentication - Restrict Super User access by RADIUS', type: 'bool', value: 'false', description: 'Restrict local Super User access based on RADIUS availability.' },
   { attribute: 'Aggressive aging - Aggressive aging enforcement method', type: 'options', value: 'Both', description: 'Defines the strategy used to enforce aggressive aging, such as enabling it when the appliance is under load, or logging events' },

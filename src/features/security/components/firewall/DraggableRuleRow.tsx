@@ -23,6 +23,8 @@ interface Props {
   highlight?: boolean;
   /** When true the row is rendered inside DragOverlay (no sensors, no ref) */
   overlay?: boolean;
+  /** Visual legality indicator — only meaningful when overlay=true */
+  dragVariant?: 'legal' | 'illegal';
 }
 
 function actionVariant(action: string) {
@@ -43,7 +45,7 @@ function networkIcon(iconKey?: string): ReactNode {
   return <Globe size={14} />;
 }
 
-export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = false, highlight = false, overlay = false }: Props) {
+export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = false, highlight = false, overlay = false, dragVariant }: Props) {
   const {
     attributes,
     listeners,
@@ -73,6 +75,8 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
       className={[
         isDragging          ? 'rule-row-dragging'  : '',
         overlay             ? 'rule-row-overlay'   : '',
+        overlay && dragVariant === 'legal'   ? 'rule-row-drag-legal'   : '',
+        overlay && dragVariant === 'illegal' ? 'rule-row-drag-illegal' : '',
         focused && !overlay ? 'rule-row--selected' : '',
         highlight && !overlay ? 'fw-rule--highlight' : '',
       ].filter(Boolean).join(' ') || undefined}
@@ -145,7 +149,7 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
                 label={svc.name}
                 icon={svc.appId != null ? (
                   <img
-                    src={`https://sc1.checkpoint.com/za/images/facetime/small_png/${svc.appId}_sml.png`}
+                    src={`https://sc1.roypoint.com/za/images/facetime/small_png/${svc.appId}_sml.png`}
                     alt=""
                     onError={e => { e.currentTarget.style.display = 'none'; }}
                   />

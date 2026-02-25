@@ -44,7 +44,7 @@ export function SystemOverview() {
           {/* 2D hardware model */}
           <div className="system-panel-section">
             <div className="system-panel-hdr">
-              <span className="system-panel-title">Hardware Model — Quantum Spark 1570</span>
+              <span className="system-panel-title">Hardware Model — New Spark 1570</span>
             </div>
             <div style={{ padding: '12px 16px 4px' }}>
               <GatewayModel1570 interfaces={interfaces} />

@@ -23,8 +23,8 @@ export function DateAndTime() {
   const { register, watch, handleSubmit, reset } = useForm<DateTimeForm>({
     defaultValues: {
       timeMode: 'ntp',
-      ntp1: 'ntp.checkpoint.com',
-      ntp2: 'ntp2.checkpoint.com',
+      ntp1: 'ntp.roypoint.com',
+      ntp2: 'ntp2.roypoint.com',
       updateInterval: 30,
       ntpAuth: false,
       sharedSecret: '',

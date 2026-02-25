@@ -25,7 +25,7 @@ interface Props {
   interfaces: InterfaceSummary[];
 }
 
-// Quantum Spark 1570 — back-panel port layout
+// New Spark 1570 — back-panel port layout
 // Left→Right: LED panel | CON | USB×2 | [sep] | WAN | [sep] | LAN 1-8 | [branding]
 const CY = 91;  // all port centers share the same Y (single row)
 
@@ -184,7 +184,7 @@ export function GatewayModel1570({ interfaces }: Props) {
           <rect key={i} x={628 + i * 11} y={22} width={6} height={138} rx={3} fill="#181818" />
         ))}
 
-        {/* Quantum Spark flame icon */}
+        {/* New Spark flame icon */}
         <g transform="translate(710, 54) scale(0.95)">
           <circle cx="16" cy="16" r="16" fill="#f97316" />
           <path
@@ -193,7 +193,7 @@ export function GatewayModel1570({ interfaces }: Props) {
           />
         </g>
 
-        {/* Check Point circle+checkmark */}
+        {/* Roy Point circle+checkmark */}
         <g transform="translate(752, 54) scale(0.85)">
           <circle cx="16" cy="16" r="16" fill="#c8102e" />
           <polyline
@@ -207,8 +207,8 @@ export function GatewayModel1570({ interfaces }: Props) {
         </g>
 
         {/* Branding text */}
-        <text x="800" y="75"  textAnchor="middle" fill="#ffffff"  fontSize="8"  fontWeight="700" fontFamily="sans-serif" letterSpacing="0.06em">CHECK POINT</text>
-        <text x="800" y="90"  textAnchor="middle" fill="#7a8a9a"  fontSize="7.5" fontFamily="sans-serif">Quantum Spark</text>
+        <text x="800" y="75"  textAnchor="middle" fill="#ffffff"  fontSize="8"  fontWeight="700" fontFamily="sans-serif" letterSpacing="0.06em">ROY POINT</text>
+        <text x="800" y="90"  textAnchor="middle" fill="#7a8a9a"  fontSize="7.5" fontFamily="sans-serif">New Spark</text>
         <text x="800" y="108" textAnchor="middle" fill="#94a3b8"  fontSize="14" fontWeight="700" fontFamily="'SFMono-Regular',Consolas,monospace">1570</text>
 
         {/* Reset button */}

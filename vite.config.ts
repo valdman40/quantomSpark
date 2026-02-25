@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       port: 3000,
-      // Proxy /gateway/* → real Quantum Spark gateway (only when VITE_GATEWAY_IP is set).
+      // Proxy /gateway/* → real New Spark gateway (only when VITE_GATEWAY_IP is set).
       // This sidesteps CORS and the self-signed TLS cert; Node injects the Cookie header
       // because browsers' Forbidden-Header rules don't apply on the server side.
       ...(gatewayOrigin

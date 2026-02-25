@@ -6,10 +6,10 @@ interface Props {
 }
 
 /**
- * Check Point brand logo — inline SVG, no external dependency.
- * Red circle with white checkmark + "CHECK POINT" wordmark.
+ * Roy Point brand logo — inline SVG, no external dependency.
+ * Red circle with white checkmark + "ROY POINT" wordmark.
  */
-export function CheckPointLogo({ variant = 'light', size = 22 }: Props) {
+export function RoyPointLogo({ variant = 'light', size = 22 }: Props) {
   const textColor = variant === 'light' ? '#ffffff' : '#1e293b';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none' }}>
@@ -34,7 +34,7 @@ export function CheckPointLogo({ variant = 'light', size = 22 }: Props) {
         lineHeight: 1,
         whiteSpace: 'nowrap',
       }}>
-        CHECK POINT
+        ROY POINT
       </span>
     </div>
   );

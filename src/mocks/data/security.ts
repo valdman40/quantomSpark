@@ -7,7 +7,7 @@ const NET: Record<string, NetworkItem> = {
   Internet:         { name: 'Internet',          type: 'Zone',                 iconKey: 'NETWORKOBJECT_BASIC_TYPE.ZONE' },
   DMZ:              { name: 'DMZ',               type: 'Network',              iconKey: 'NETWORKOBJECT_BASIC_TYPE.NETWORK' },
   'DMZ-WebServer':  { name: 'DMZ-WebServer',     type: 'Host',                 iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' },
-  'Checkpoint-GW':  { name: 'Checkpoint-GW',     type: 'Host',                 iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' },
+  'Roypoint-GW':  { name: 'Roypoint-GW',     type: 'Host',                 iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' },
   VPN_RA_Community: { name: 'VPN_RA_Community',  type: 'VPN Community',        iconKey: 'NETWORKOBJECT_BASIC_TYPE.NETWORK' },
   'LAN-Users':      { name: 'LAN-Users',         type: 'Network object group', iconKey: 'networkObjectsGroup',
                       members: [{ name: 'Mgmt-PC', iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' }, { name: 'Dev-Workstation', iconKey: 'NETWORKOBJECT_BASIC_TYPE.SINGLE_IP' }] },
@@ -24,7 +24,7 @@ function net(name: string): NetworkItem {
 const FW_ACTIONS  = ['Accept', 'Drop', 'Encrypt', 'Reject'] as const;
 const FW_TRACKS   = ['Log', 'None', 'Alert'] as const;
 const SOURCES     = ['LAN', 'Internet', 'DMZ', 'VPN_RA_Community', 'Any', 'LAN-Users', 'DMZ-Servers', 'WAN'];
-const DESTS       = ['Internet', 'LAN', 'DMZ-WebServer', 'Checkpoint-GW', 'Any', 'LAN-Users', 'WAN', 'DMZ-Servers'];
+const DESTS       = ['Internet', 'LAN', 'DMZ-WebServer', 'Roypoint-GW', 'Any', 'LAN-Users', 'WAN', 'DMZ-Servers'];
 const SERVICES_FW = ['Any', 'HTTP', 'HTTPS', 'DNS', 'SSH', 'RDP', 'SMTP', 'FTP', 'BitTorrent,eDonkey', 'SMB'];
 
 export let mockFirewallRules: FirewallRule[] = [
@@ -33,7 +33,7 @@ export let mockFirewallRules: FirewallRule[] = [
   { id: 'fr-3', number: 3, name: 'Block P2P',               source: [net('LAN')],              destination: [net('Any')],          service: [{ name: 'BitTorrent', description: 'BitTorrent is a peer-to-peer file sharing protocol. Can consume high bandwidth and bypass standard port filtering.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'Medium Risk'] }, { name: 'eDonkey', description: 'eDonkey2000 is a decentralized peer-to-peer file sharing network. Associated with copyright-infringing downloads.', tags: ['High Bandwidth', 'P2P', 'File Sharing', 'High Risk'] }], action: 'Drop', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Block peer-to-peer applications' },
   { id: 'fr-4', number: 4, name: 'Allow DMZ Web',           source: [net('Internet')],         destination: [net('DMZ-WebServer')], service: [{ name: 'HTTP', description: 'Hypertext Transfer Protocol — unencrypted web traffic. Operates on TCP port 80.', tags: ['Web', 'TCP', 'Port 80', 'Unencrypted'] }, { name: 'HTTPS', description: 'HTTP Secure — encrypted web traffic using TLS/SSL. Operates on TCP port 443.', tags: ['Web', 'TCP', 'Port 443', 'Encrypted', 'SSL/TLS'] }], action: 'Accept', track: 'Log', enabled: true, installedOn: ['All'], comment: 'Inbound web traffic to DMZ' },
   { id: 'fr-5', number: 5, name: 'Allow VPN Remote Access', source: [net('VPN_RA_Community')], destination: [net('LAN')],          service: [{ name: 'Any' }],                             action: 'Encrypt', track: 'Log',   enabled: true,  installedOn: ['All'] },
-  { id: 'fr-6', number: 6, name: 'Stealth Rule',            source: [net('Any')],              destination: [net('Checkpoint-GW')],service: [{ name: 'Any' }],                             action: 'Drop',    track: 'Alert', enabled: true,  installedOn: ['All'], comment: 'Protect the gateway itself' },
+  { id: 'fr-6', number: 6, name: 'Stealth Rule',            source: [net('Any')],              destination: [net('Roypoint-GW')],service: [{ name: 'Any' }],                             action: 'Drop',    track: 'Alert', enabled: true,  installedOn: ['All'], comment: 'Protect the gateway itself' },
   { id: 'fr-7', number: 7, name: 'Cleanup Rule',            source: [net('Any')],              destination: [net('Any')],          service: [{ name: 'Any' }],                             action: 'Drop',    track: 'Log',   enabled: true,  installedOn: ['All'], comment: 'Drop everything else' },
   ...Array.from({ length: 53 }, (_, i): FirewallRule => {
     const n      = i + 8;
