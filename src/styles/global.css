@@ -238,8 +238,9 @@ input, select, textarea { font-family: inherit; }
 .chip       { display: inline-flex; align-items: center; gap: 5px;
               padding: 2px 7px 2px 5px; border: 1px solid var(--border); border-radius: 100px;
               background: var(--surface); font-size: 0.78rem; white-space: nowrap; cursor: default; }
-.chip-icon  { display: flex; align-items: center; flex-shrink: 0; }
+.chip-icon  { display: flex; align-items: center; flex-shrink: 0; color: var(--text-secondary); }
 .chip-icon img { width: 16px; height: 16px; object-fit: contain; border-radius: 2px; display: block; }
+.chip-icon svg { width: 14px; height: 14px; flex-shrink: 0; }
 .chip-label { line-height: 1; }
 
 /* ─── Chip tooltip (portal — rendered at document.body, position: fixed) ─── */

@@ -5,6 +5,7 @@ import {
   ArrowLeftRight,
   Globe,
   Layers,
+  Lock,
   Network,
   Server,
   ShieldCheck,
@@ -31,6 +32,19 @@ function actionVariant(action: string) {
   if (action === 'Accept' || action === 'Encrypt') return 'success' as const;
   if (action === 'Drop'   || action === 'Reject')  return 'error'   as const;
   return 'neutral' as const;
+}
+
+/** Maps a service name to a lucide icon — used as fallback when no appId CDN icon is available. */
+function serviceIcon(name: string): ReactNode {
+  const n = name.toLowerCase();
+  if (n.includes('http') || n.includes('web'))                       return <Globe size={14} />;
+  if (n.includes('dns'))                                             return <Server size={14} />;
+  if (n.includes('ssh') || n.includes('sftp') || n.includes('tls')) return <Lock size={14} />;
+  if (n.includes('ftp'))                                             return <ArrowLeftRight size={14} />;
+  if (n.includes('rdp') || n.includes('smb') || n.includes('smtp')) return <Network size={14} />;
+  if (n.includes('torrent') || n.includes('donkey'))                 return <ArrowLeftRight size={14} />;
+  if (n.includes('vpn') || n.includes('ike') || n.includes('esp'))  return <ShieldCheck size={14} />;
+  return <Network size={14} />;
 }
 
 /** Maps a gateway `_icon` / `__tblName` / `type` string to a lucide icon (size 14). */
@@ -149,11 +163,11 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
                 label={svc.name}
                 icon={svc.appId != null ? (
                   <img
-                    src={`https://sc1.roypoint.com/za/images/facetime/small_png/${svc.appId}_sml.png`}
+                    src={`https://sc1.checkpoint.com/za/images/facetime/small_png/${svc.appId}_sml.png`}
                     alt=""
                     onError={e => { e.currentTarget.style.display = 'none'; }}
                   />
-                ) : undefined}
+                ) : serviceIcon(svc.name)}
                 tooltip={{ description: svc.description, tags: svc.tags }}
               />
             )
