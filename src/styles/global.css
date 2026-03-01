@@ -1105,6 +1105,63 @@ select.form-control {
 .rule-form-add-btn:hover  { background: #2563eb; transform: scale(1.1); }
 .rule-form-add-btn:active { transform: scale(0.95); }
 
+/* ── Inline edit row ─────────────────────────────────────────────────────── */
+.inline-edit-row td            { background: #f0f7ff; vertical-align: middle; }
+
+/* Save / Cancel buttons (replace drag-handle cell) */
+.inline-edit-actions           { display: flex; gap: 3px; padding: 0 2px; }
+.inline-edit-save-btn,
+.inline-edit-cancel-btn        { width: 22px; height: 22px; border-radius: 50%;
+                                 border: none; cursor: pointer; font-size: 11px;
+                                 display: flex; align-items: center; justify-content: center;
+                                 transition: background 0.12s, transform 0.1s; }
+.inline-edit-save-btn          { background: #22c55e; color: #fff; }
+.inline-edit-save-btn:hover    { background: #16a34a; transform: scale(1.08); }
+.inline-edit-save-btn:disabled { background: var(--border); cursor: default; transform: none; }
+.inline-edit-cancel-btn        { background: #f1f5f9; color: var(--text-secondary); }
+.inline-edit-cancel-btn:hover  { background: #fee2e2; color: var(--red); transform: scale(1.08); }
+.inline-edit-cancel-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+/* Name cell with gear icon */
+.inline-name-cell              { display: flex; align-items: center; gap: 6px; }
+.inline-settings-btn           { display: flex; align-items: center; justify-content: center;
+                                 width: 22px; height: 22px; border-radius: 4px; border: none;
+                                 background: none; cursor: pointer; color: var(--text-muted);
+                                 opacity: 0; transition: opacity 0.12s, background 0.1s, color 0.1s;
+                                 flex-shrink: 0; }
+.inline-name-cell:hover .inline-settings-btn { opacity: 1; }
+.inline-settings-btn:hover     { background: var(--surface); color: var(--blue); }
+
+/* ── Rule Settings Popup ─────────────────────────────────────────────────── */
+.rule-settings-popup           { position: fixed; z-index: 9500; width: 300px;
+                                 background: #fff; border: 1px solid var(--border);
+                                 border-radius: var(--radius); box-shadow: var(--shadow-md);
+                                 display: flex; flex-direction: column; overflow: hidden; }
+.rule-settings-popup-hdr       { display: flex; align-items: center; justify-content: space-between;
+                                 padding: 9px 12px; border-bottom: 1px solid var(--border);
+                                 font-size: 0.84rem; font-weight: 600; color: var(--text); }
+.rule-settings-close           { background: none; border: none; cursor: pointer; font-size: 12px;
+                                 color: var(--text-muted); padding: 2px 4px; border-radius: 4px; }
+.rule-settings-close:hover     { background: var(--surface); color: var(--text); }
+.rule-settings-popup-body      { padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.rule-settings-row             { display: flex; align-items: center; gap: 8px;
+                                 font-size: 0.84rem; cursor: pointer; user-select: none; }
+.rule-settings-row--inputs     { flex-wrap: wrap; cursor: default; }
+.rule-settings-field           { display: flex; flex-direction: column; gap: 4px; }
+.rule-settings-label           { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); }
+.rule-settings-label--optional { display: flex; align-items: center; gap: 6px;
+                                 font-weight: 400; color: var(--text); font-size: 0.82rem; cursor: pointer; }
+.rule-settings-textarea        { border: 1px solid var(--border); border-radius: 4px;
+                                 padding: 6px 8px; font-size: 0.82rem; resize: vertical;
+                                 outline: none; width: 100%; }
+.rule-settings-textarea:focus  { border-color: var(--blue); }
+.rule-settings-input           { border: 1px solid var(--border); border-radius: 4px;
+                                 padding: 4px 7px; font-size: 0.82rem; outline: none; background: #f8fafc; }
+.rule-settings-input--time     { width: 90px; }
+.rule-settings-input--bw       { width: 72px; }
+.rule-settings-sep             { color: var(--text-muted); font-size: 0.9rem; }
+.rule-settings-unit            { font-size: 0.8rem; color: var(--text-muted); }
+
 /* ── Object Picker popover ───────────────────────────────────────────────── */
 .obj-picker {
   position: fixed;

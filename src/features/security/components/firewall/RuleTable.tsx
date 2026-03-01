@@ -19,7 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
-import { AlertTriangle, RefreshCw, ShieldOff } from 'lucide-react';
+import { AlertTriangle, Maximize2, RefreshCw, Rows3, ShieldOff } from 'lucide-react';
 
 import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
 import { openEditRule, setFocusedRule } from '../../securitySlice';
@@ -32,6 +32,7 @@ import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
 import { RuleForm } from './RuleForm';
 import { DraggableRuleRow } from './DraggableRuleRow';
+import { InlineRuleRow } from './InlineRuleRow';
 import type { FirewallRule } from '../../../../types/security';
 
 // Stable fallback reference — prevents useEffect([serverRules]) from firing on every
@@ -171,9 +172,13 @@ function NewRuleDropdown({ focusedRuleId, onSelect }: NewRuleDropdownProps) {
 
 export function RuleTable() {
   const dispatch = useAppDispatch();
-  const { ruleModalOpen, selectedRuleId, newRuleGatewayDefaults, focusedRuleId, policyInstall, lastSavedRuleId } =
+  const { ruleModalOpen, selectedRuleId, newRuleGatewayDefaults, focusedRuleId, policyInstall, lastSavedRuleId, saving } =
     useAppSelector(s => s.security);
   const { data: serverRules = EMPTY_RULES, isLoading, isRefetching, isError, error, refetch } = useFirewallRules();
+
+  // ── Edit mode toggle ────────────────────────────────────────
+  const [editMode,     setEditMode]     = useState<'modal' | 'inline'>('modal');
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
 
   // ── Local ordered copy for instant visual feedback ──────────
   const [orderedRules, setOrderedRules] = useState<FirewallRule[]>(serverRules);
@@ -205,6 +210,12 @@ export function RuleTable() {
     const timer = setTimeout(() => setHighlightedRuleId(null), 2400);
     return () => clearTimeout(timer);
   }, [highlightedRuleId]);
+
+  // Clear the editing row after inline save succeeds
+  useEffect(() => {
+    if (lastSavedRuleId && editingRowId) setEditingRowId(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastSavedRuleId]);
 
   // ── Section collapse state ───────────────────────────────────
   const [collapsedZones,   setCollapsedZones]   = useState<Set<string>>(new Set());
@@ -327,9 +338,16 @@ export function RuleTable() {
   }
 
   // ── Row callbacks ────────────────────────────────────────────
-  const onEdit   = (id: string) => dispatch(openEditRule(id));
+  const onEdit   = (id: string) => {
+    if (editMode === 'inline') setEditingRowId(id);
+    else dispatch(openEditRule(id));
+  };
   const onDelete = (id: string) => dispatch({ type: 'security/deleteRule', payload: id });
   const onFocus  = (id: string) => dispatch(setFocusedRule(id));
+
+  function handleInlineSave(payload: Partial<FirewallRule>) {
+    dispatch({ type: 'security/saveRule', payload: { data: payload, id: payload.id } });
+  }
 
   function handleNewRule(position: NewPosition) {
     dispatch({
@@ -357,6 +375,16 @@ export function RuleTable() {
         subtitle="Access control policy — drag rows to reorder, then install policy"
         actions={
           <>
+            <Button
+              variant={editMode === 'inline' ? 'primary' : 'secondary'}
+              onClick={() => {
+                setEditMode(m => m === 'modal' ? 'inline' : 'modal');
+                setEditingRowId(null);
+              }}
+              title={editMode === 'modal' ? 'Switch to inline editing' : 'Switch to modal editing'}
+            >
+              {editMode === 'modal' ? <Rows3 size={14} /> : <Maximize2 size={14} />}
+            </Button>
             <Button
               variant="secondary"
               onClick={() => refetch()}
@@ -494,6 +522,17 @@ export function RuleTable() {
                           </td>
                         </tr>
                       );
+                      if (editMode === 'inline' && editingRowId === item.rule.id) {
+                        return (
+                          <InlineRuleRow
+                            key={item.rule.id}
+                            rule={item.rule}
+                            saving={saving}
+                            onSave={handleInlineSave}
+                            onCancel={() => setEditingRowId(null)}
+                          />
+                        );
+                      }
                       return (
                         <DraggableRuleRow
                           key={item.rule.id}
