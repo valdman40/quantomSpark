@@ -31,6 +31,8 @@ export const queryKeys = {
     rules: () => ['security', 'rules'] as const,
     rawRules: () => ['security', 'rules', 'raw'] as const,
     nat: () => ['security', 'nat'] as const,
+    networkObjects: () => ['security', 'network-objects'] as const,
+    services: () => ['security', 'services'] as const,
   },
 
   vpn: {

@@ -18,6 +18,7 @@ import { Reports }               from '../features/home/reports/Reports';
 import { DrSpark }               from '../features/home/drSpark/DrSpark';
 import { Tools }                 from '../features/home/tools/Tools';
 import { Support }               from '../features/home/support/Support';
+import { FirewallOverview }  from '../features/security/components/firewallOverview/FirewallOverview';
 import { RuleTable }         from '../features/security/components/firewall/RuleTable';
 import { NatTable }          from '../features/security/components/nat/NatTable';
 import { TunnelList }        from '../features/vpn/components/siteToSite/TunnelList';
@@ -96,8 +97,9 @@ const COMPONENT_MAP: Record<string, React.ReactElement> = {
   '/device/internal-certificate':   <InternalCertificate />,
 
   // Access Policy
-  '/access-policy/policy': <RuleTable />,
-  '/access-policy/nat':    <NatTable />,
+  '/access-policy/firewall-overview': <FirewallOverview />,
+  '/access-policy/policy':            <RuleTable />,
+  '/access-policy/nat':               <NatTable />,
 
   // VPN
   '/vpn/site-to-site':  <TunnelList />,

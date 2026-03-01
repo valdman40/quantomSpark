@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import { mockFirewallRules, mockNatRules } from '../data/security';
+import { mockNetworkObjects, mockPickerServices } from '../data/securityObjects';
 import type { FirewallRule, NatRule } from '../../types/security';
 
 let rules = [...mockFirewallRules];
@@ -73,6 +74,18 @@ export const securityHandlers = [
   http.post('/api/security/install-policy', async () => {
     await delay(1500);
     return HttpResponse.json({ data: { success: true, rulesInstalled: rules.length, duration: 1.5 }, status: 'ok' });
+  }),
+
+  // Network objects (for rule editor picker)
+  http.get('/api/security/network-objects', async () => {
+    await delay(150);
+    return HttpResponse.json({ data: mockNetworkObjects, status: 'ok' });
+  }),
+
+  // Services (for rule editor picker)
+  http.get('/api/security/services', async () => {
+    await delay(150);
+    return HttpResponse.json({ data: mockPickerServices, status: 'ok' });
   }),
 
   // NAT rules (paginated)

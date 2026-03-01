@@ -28,6 +28,8 @@ interface ChipProps {
   className?: string;
   /** When provided, shows a hover card with metadata. */
   tooltip?: ChipTooltip;
+  /** When provided, shows an ✕ button on hover that calls this to remove the chip. */
+  onRemove?: () => void;
 }
 
 /** Maps a gateway `_icon` / `type` string to a small lucide icon. */
@@ -51,7 +53,7 @@ function networkMemberIcon(iconKey?: string): ReactNode {
  *   <Chip label="DNS" tooltip={{ description: "...", tags: ["UDP"] }} />
  *   <Chip label="my_group" icon={<Layers size={14}/>} tooltip={{ type: "Network object group", members: [...] }} />
  */
-export function Chip({ icon, label, className, tooltip }: ChipProps) {
+export function Chip({ icon, label, className, tooltip, onRemove }: ChipProps) {
   const chipRef  = useRef<HTMLSpanElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [pos, setPos] = useState<TooltipPos | null>(null);
@@ -78,12 +80,20 @@ export function Chip({ icon, label, className, tooltip }: ChipProps) {
     <>
       <span
         ref={chipRef}
-        className={['chip', className].filter(Boolean).join(' ')}
+        className={['chip', onRemove ? 'chip--removable' : '', className].filter(Boolean).join(' ')}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         {icon && <span className="chip-icon">{icon}</span>}
         <span className="chip-label">{label}</span>
+        {onRemove && (
+          <button
+            type="button"
+            className="chip-remove-btn"
+            aria-label={`Remove ${label}`}
+            onClick={e => { e.stopPropagation(); onRemove(); }}
+          >✕</button>
+        )}
       </span>
 
       {hasTooltip && pos && createPortal(

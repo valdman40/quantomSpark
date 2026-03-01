@@ -1,25 +1,14 @@
-import { type ReactNode } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  ArrowLeftRight,
-  Globe,
-  Layers,
-  Lock,
-  Network,
-  Server,
-  ShieldCheck,
-} from 'lucide-react';
 import { Badge } from '../../../../components/common/Badge';
-import { Button } from '../../../../components/common/Button';
 import { Chip } from '../../../../components/common/Chip';
 import type { FirewallRule } from '../../../../types/security';
+import { networkIcon, serviceIcon } from './ruleIcons';
 
 interface Props {
   rule: FirewallRule;
-  onEdit:    (id: string) => void;
-  onDelete:  (id: string) => void;
-  onFocus?:  (id: string) => void;
+  onEdit:   (id: string) => void;
+  onFocus?: (id: string) => void;
   focused?:  boolean;
   highlight?: boolean;
   /** When true the row is rendered inside DragOverlay (no sensors, no ref) */
@@ -34,32 +23,10 @@ function actionVariant(action: string) {
   return 'neutral' as const;
 }
 
-/** Maps a service name to a lucide icon — used as fallback when no appId CDN icon is available. */
-function serviceIcon(name: string): ReactNode {
-  const n = name.toLowerCase();
-  if (n.includes('http') || n.includes('web'))                       return <Globe size={14} />;
-  if (n.includes('dns'))                                             return <Server size={14} />;
-  if (n.includes('ssh') || n.includes('sftp') || n.includes('tls')) return <Lock size={14} />;
-  if (n.includes('ftp'))                                             return <ArrowLeftRight size={14} />;
-  if (n.includes('rdp') || n.includes('smb') || n.includes('smtp')) return <Network size={14} />;
-  if (n.includes('torrent') || n.includes('donkey'))                 return <ArrowLeftRight size={14} />;
-  if (n.includes('vpn') || n.includes('ike') || n.includes('esp'))  return <ShieldCheck size={14} />;
-  return <Network size={14} />;
-}
 
-/** Maps a gateway `_icon` / `__tblName` / `type` string to a lucide icon (size 14). */
-function networkIcon(iconKey?: string): ReactNode {
-  if (!iconKey) return <Globe size={14} />;
-  if (iconKey === 'networkObjectsGroup')      return <Layers size={14} />;
-  if (iconKey.includes('SINGLE_IP'))          return <Server size={14} />;
-  if (iconKey.includes('NETWORK') || iconKey.includes('SUBNET')) return <Network size={14} />;
-  if (iconKey.includes('RANGE'))              return <ArrowLeftRight size={14} />;
-  if (iconKey.includes('DOMAIN') || iconKey.includes('FQDN')) return <Globe size={14} />;
-  if (iconKey.includes('ZONE'))               return <ShieldCheck size={14} />;
-  return <Globe size={14} />;
-}
+export function DraggableRuleRow({ rule, onEdit, onFocus, focused = false, highlight = false, overlay = false, dragVariant }: Props) {
+  const isDraggable = rule.origin === 'RULE_ORIGIN.MANUAL';
 
-export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = false, highlight = false, overlay = false, dragVariant }: Props) {
   const {
     attributes,
     listeners,
@@ -67,7 +34,7 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: rule.id });
+  } = useSortable({ id: rule.id, disabled: !isDraggable });
 
   const style = overlay
     ? undefined                          // overlay clone — no transform needed
@@ -77,15 +44,19 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
       };
 
   function handleRowClick(e: React.MouseEvent) {
-    // Don't steal clicks on buttons or the drag handle
     if ((e.target as HTMLElement).closest('button, .drag-handle')) return;
     onFocus?.(rule.id);
+  }
+
+  function handleRowDoubleClick(e: React.MouseEvent) {
+    if ((e.target as HTMLElement).closest('button, .drag-handle')) return;
+    if (isDraggable) onEdit(rule.id);
   }
 
   return (
     <tr
       ref={overlay ? undefined : setNodeRef}
-      style={style}
+      style={{ ...style, opacity: rule.enabled ? 1 : 0.5 }}
       className={[
         isDragging          ? 'rule-row-dragging'  : '',
         overlay             ? 'rule-row-overlay'   : '',
@@ -95,25 +66,28 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
         highlight && !overlay ? 'fw-rule--highlight' : '',
       ].filter(Boolean).join(' ') || undefined}
       onClick={overlay ? undefined : handleRowClick}
+      onDoubleClick={overlay ? undefined : handleRowDoubleClick}
       {...(overlay ? {} : attributes)}
     >
-      {/* ── Drag handle ── */}
+      {/* ── Drag handle (only for MANUAL rules) ── */}
       <td style={{ width: 32, padding: '0 4px 0 10px' }}>
-        <span
-          className="drag-handle"
-          {...(overlay ? {} : listeners)}
-          title="Drag to reorder"
-          aria-label="Reorder rule"
-        >
-          <GripIcon />
-        </span>
+        {isDraggable && (
+          <span
+            className="drag-handle"
+            {...(overlay ? {} : listeners)}
+            title="Drag to reorder"
+            aria-label="Reorder rule"
+          >
+            <GripIcon />
+          </span>
+        )}
       </td>
 
       {/* ── Rule # ── */}
       <td className="rule-num" style={{ width: 36 }}>{rule.number}</td>
 
       {/* ── Name ── */}
-      <td style={{ fontWeight: 500, opacity: rule.enabled ? 1 : 0.5 }}>{rule.name}</td>
+      <td style={{ fontWeight: 500 }}>{rule.name}</td>
 
       {/* ── Source ── */}
       <td>
@@ -188,15 +162,8 @@ export function DraggableRuleRow({ rule, onEdit, onDelete, onFocus, focused = fa
         </Badge>
       </td>
 
-      {/* ── Row actions ── */}
-      <td>
-        {!overlay && (
-          <div className="actions">
-            <Button size="sm" variant="ghost" onClick={() => onEdit(rule.id)}>Edit</Button>
-            <Button size="sm" variant="ghost" onClick={() => onDelete(rule.id)}>Del</Button>
-          </div>
-        )}
-      </td>
+      {/* ── Comment ── */}
+      <td><span className="text-muted text-sm">{rule.comment ?? ''}</span></td>
     </tr>
   );
 }

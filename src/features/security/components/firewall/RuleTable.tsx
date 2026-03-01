@@ -338,14 +338,17 @@ export function RuleTable() {
     });
   }
 
-  const installing = policyInstall.status === 'installing';
-  const selected   = orderedRules.find(r => r.id === selectedRuleId);
+  const selected     = orderedRules.find(r => r.id === selectedRuleId);
+  const focusedRule  = orderedRules.find(r => r.id === focusedRuleId);
+  const canEditFocused = focusedRule?.origin === 'RULE_ORIGIN.MANUAL';
 
   // Only pass visible rule IDs to SortableContext — collapsed sections hide rows but their
   // IDs would still be in orderedRules. dnd-kit requires every id in `items` to have a
   // registered droppable element; missing ones break collision detection.
   const displayItems = buildDisplayItems(orderedRules, collapsedZones, collapsedOrigins);
-  const sortableIds  = displayItems.filter(i => i.kind === 'rule').map(i => i.rule.id);
+  const sortableIds  = displayItems
+    .filter((i): i is { kind: 'rule'; rule: FirewallRule } => i.kind === 'rule' && i.rule.origin === 'RULE_ORIGIN.MANUAL')
+    .map(i => i.rule.id);
 
   return (
     <div className="fw-page">
@@ -365,28 +368,27 @@ export function RuleTable() {
             </Button>
             <Button
               variant="secondary"
-              disabled={!focusedRuleId}
-              onClick={() => focusedRuleId && onEdit(focusedRuleId)}
-              title={focusedRuleId ? 'Edit selected rule' : 'Click a rule row to select it first'}
+              disabled={!canEditFocused}
+              onClick={() => focusedRuleId && canEditFocused && onEdit(focusedRuleId)}
+              title={
+                !focusedRuleId      ? 'Click a rule row to select it first' :
+                !canEditFocused     ? 'Only Policy Rules can be edited' :
+                                      'Edit selected rule'
+              }
             >
               ✎ Edit
             </Button>
             <Button
               variant="secondary"
-              disabled={!focusedRuleId}
-              onClick={() => focusedRuleId && onDelete(focusedRuleId)}
-              title={focusedRuleId ? 'Delete selected rule' : 'Click a rule row to select it first'}
+              disabled={!canEditFocused}
+              onClick={() => focusedRuleId && canEditFocused && onDelete(focusedRuleId)}
+              title={
+                !focusedRuleId  ? 'Click a rule row to select it first' :
+                !canEditFocused ? 'Only Policy Rules can be deleted' :
+                                  'Delete selected rule'
+              }
             >
               🗑 Delete
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => dispatch({ type: 'security/installPolicy' })}
-              loading={installing}
-            >
-              {installing
-                ? `Installing… ${policyInstall.progress ?? 0}%`
-                : '▶ Install Policy'}
             </Button>
             <NewRuleDropdown focusedRuleId={focusedRuleId} onSelect={handleNewRule} />
           </>
@@ -459,7 +461,7 @@ export function RuleTable() {
                 <thead>
                   <tr>
                     <th style={{ width: 32 }} aria-label="Drag handle" />
-                    <th style={{ width: 36 }}>#</th>
+                    <th style={{ width: 36 }}>Priority</th>
                     <th>Name</th>
                     <th>Source</th>
                     <th>Destination</th>
@@ -467,7 +469,7 @@ export function RuleTable() {
                     <th>Action</th>
                     <th>Track</th>
                     <th>Status</th>
-                    <th style={{ width: 100 }}>Actions</th>
+                    <th>Comment</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -497,7 +499,6 @@ export function RuleTable() {
                           key={item.rule.id}
                           rule={item.rule}
                           onEdit={onEdit}
-                          onDelete={onDelete}
                           onFocus={onFocus}
                           focused={focusedRuleId === item.rule.id}
                           highlight={item.rule.id === highlightedRuleId}
@@ -521,7 +522,6 @@ export function RuleTable() {
                     <DraggableRuleRow
                       rule={activeRule}
                       onEdit={onEdit}
-                      onDelete={onDelete}
                       overlay
                       dragVariant={isDragLegal === true ? 'legal' : isDragLegal === false ? 'illegal' : undefined}
                     />
@@ -538,6 +538,7 @@ export function RuleTable() {
         open={ruleModalOpen}
         title={selected ? `Edit Rule — ${selected.name}` : 'Add Firewall Rule'}
         onClose={() => dispatch({ type: 'security/closeRuleModal' })}
+        size="xl"
       >
         <RuleForm initial={selected} gatewayDefaults={newRuleGatewayDefaults} />
       </Modal>

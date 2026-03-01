@@ -28,8 +28,10 @@ export const ENDPOINTS = {
     rule: (id: string) => `/security/rules/${id}`,
     nat: '/security/nat',
     natRule: (id: string) => `/security/nat/${id}`,
-    installPolicy: '/security/install-policy',
-    reorderRules:  '/security/rules/reorder',
+    installPolicy:  '/security/install-policy',
+    reorderRules:   '/security/rules/reorder',
+    networkObjects: '/security/network-objects',
+    services:       '/security/services',
   },
 
   // VPN

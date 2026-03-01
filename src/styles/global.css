@@ -267,6 +267,14 @@ input, select, textarea { font-family: inherit; }
 /* Mini chip variant used inside tooltips */
 .chip--mini                  { padding: 1px 6px 1px 4px; font-size: 0.72rem; }
 .chip--mini .chip-icon svg   { width: 12px; height: 12px; }
+/* Removable chip */
+.chip--removable             { padding-right: 4px; }
+.chip-remove-btn             { display: inline-flex; align-items: center; justify-content: center;
+                               background: none; border: none; cursor: pointer; padding: 0 1px;
+                               font-size: 9px; line-height: 1; color: var(--text-muted);
+                               opacity: 0; transition: opacity 0.12s, color 0.12s; margin-left: 2px; }
+.chip--removable:hover .chip-remove-btn { opacity: 1; }
+.chip-remove-btn:hover       { color: var(--red); }
 
 /* ─── Service column chip list ───────────────────────────── */
 .svc-list   { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 4px 0; }
@@ -328,6 +336,7 @@ select.form-control {
                  width: 540px; max-width: 90vw; max-height: 88vh; display: flex; flex-direction: column; }
 .modal-sm      { width: 380px; }
 .modal-lg      { width: 720px; }
+.modal-xl      { width: 900px; }
 .modal-header  { display: flex; align-items: center; justify-content: space-between;
                  padding: 14px 20px; border-bottom: 1px solid var(--border); }
 .modal-title   { font-size: 0.95rem; font-weight: 600; }
@@ -844,6 +853,79 @@ select.form-control {
 .admin-port-row     { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
 .admin-port-label   { min-width: 140px; color: var(--text-secondary); }
 
+/* ─── Blade Control page (Firewall Overview) ────────────────────── */
+.bc-section            { background: var(--card-bg); border: 1px solid var(--border);
+                         border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+.bc-section-title      { font-size: 0.95rem; font-weight: 600; padding: 12px 20px;
+                         border-bottom: 1px solid var(--border); }
+.bc-section-body       { display: flex; gap: 0; }
+.bc-left-col           { min-width: 220px; padding: 16px 20px;
+                         border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+.bc-right-col          { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
+
+/* Radio + checkbox labels */
+.bc-radio-label        { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; }
+.bc-checkbox-label     { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; }
+
+/* Right-side checkbox panel */
+.bc-checkboxes         { gap: 10px; }
+.bc-checkboxes--disabled { opacity: 0.45; pointer-events: none; }
+
+/* Info / warning rows */
+.bc-info-row           { display: flex; align-items: flex-start; gap: 7px; font-size: 0.83rem;
+                         color: var(--text-secondary); line-height: 1.5; }
+.bc-icon               { flex-shrink: 0; margin-top: 2px; }
+.bc-icon--info         { color: var(--blue); }
+.bc-icon--warn         { color: var(--yellow); }
+.bc-icon--green        { color: var(--green); }
+.bc-icon--red          { color: var(--red); }
+.bc-icon--file         { color: var(--text-muted); }
+.bc-icon--cp           { color: var(--brand); font-size: 11px; margin-top: 3px; }
+.bc-link               { color: var(--blue); }
+.bc-link:hover         { text-decoration: underline; }
+.bc-link--action       { margin-left: 12px; }
+.bc-link-btn           { background: none; border: none; padding: 0; cursor: pointer;
+                         font-size: inherit; font-family: inherit; }
+
+/* Bandwidth inputs */
+.bc-bw-block           { margin-top: 4px; display: flex; flex-direction: column; gap: 6px; padding-left: 24px; }
+.bc-bw-row             { display: flex; align-items: center; gap: 10px; }
+.bc-bw-label           { min-width: 68px; font-size: 0.82rem; color: var(--text-secondary); cursor: default; }
+.bc-bw-label--off      { opacity: 0.5; }
+.bc-bw-input           { width: 120px; padding: 4px 8px !important; font-size: 0.82rem; }
+
+/* General section body */
+.bc-general-body       { padding: 16px 20px; display: flex; flex-direction: column; gap: 6px; }
+.bc-gen-sub            { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+                         text-transform: uppercase; letter-spacing: 0.04em;
+                         margin-top: 12px; margin-bottom: 2px; }
+.bc-gen-sub:first-child { margin-top: 0; }
+.bc-gen-row            { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 0.85rem; }
+
+/* Tracking rows */
+.bc-track-row          { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.bc-track-word         { min-width: 26px; }
+.bc-track-select       { width: 110px; padding: 3px 6px !important; font-size: 0.82rem; height: auto; }
+
+/* ─── Outgoing Services modal ───────────────────────────────────── */
+.os-body               { display: flex; flex-direction: column; gap: 14px; }
+.os-radio-label        { display: flex; align-items: center; gap: 8px;
+                         font-size: 0.875rem; cursor: pointer; }
+.os-multiselect        { margin-top: 2px; }
+.os-multiselect-trigger {
+  width: 100%; display: flex; align-items: center; justify-content: flex-end;
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px;
+  background: #fff; cursor: pointer; min-height: 34px;
+}
+.os-multiselect-trigger:hover { border-color: var(--blue); }
+.os-multiselect-list   { border: 1px solid var(--border); border-top: none;
+                         border-radius: 0 0 4px 4px; background: #fff;
+                         max-height: 260px; overflow-y: auto; }
+.os-svc-row            { display: flex; align-items: center; gap: 10px;
+                         padding: 8px 14px; font-size: 0.85rem; cursor: pointer; }
+.os-svc-row:hover      { background: #f8fafc; }
+.os-svc-icon           { color: var(--text-secondary); flex-shrink: 0; }
+
 /* ─── Simple form rows (Device Details, Routing Options, etc.) ───── */
 .simple-form        { max-width: 480px; }
 .simple-form-row    { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 0.85rem; }
@@ -977,3 +1059,153 @@ select.form-control {
 .rule-form-enabled-row      { padding: 8px 0 0; display: flex; align-items: center; }
 .rule-form-enabled-row label { display: flex; align-items: center; gap: 7px;
                                font-size: 0.85rem; cursor: pointer; }
+
+/* ── Chip list inside the rule form editor ─────────────────────────────── */
+.rule-form-chip-list {
+  display: flex; flex-direction: column; gap: 4px;
+  align-items: flex-start; padding: 2px 0; min-height: 28px;
+}
+
+.rule-form-chip-wrap {
+  position: relative; display: inline-flex;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.rule-form-chip-wrap.removing {
+  opacity: 0; transform: scale(0.75); pointer-events: none;
+}
+
+.rule-form-chip-remove {
+  position: absolute; top: -5px; right: -5px;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--text-secondary); color: #fff; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; line-height: 1; padding: 0;
+  opacity: 0; transform: scale(0.6);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.rule-form-chip-wrap:hover .rule-form-chip-remove {
+  opacity: 1; transform: scale(1);
+}
+
+.rule-form-chip-remove:hover {
+  background: var(--red);
+}
+
+/* ── Add-object button (inside rule form columns) ────────────────────────── */
+.rule-form-add-btn {
+  margin-top: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--blue); color: #fff;
+  border: none; cursor: pointer; font-size: 14px; line-height: 1;
+  transition: background 0.15s, transform 0.1s;
+}
+.rule-form-add-btn:hover  { background: #2563eb; transform: scale(1.1); }
+.rule-form-add-btn:active { transform: scale(0.95); }
+
+/* ── Object Picker popover ───────────────────────────────────────────────── */
+.obj-picker {
+  position: fixed;
+  z-index: 9500;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Search row */
+.obj-picker-search-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.obj-picker-search-icon { color: var(--text-secondary); flex-shrink: 0; }
+.obj-picker-search {
+  flex: 1; border: none; outline: none;
+  font-size: 0.88rem; background: transparent;
+  color: var(--text);
+}
+.obj-picker-search::placeholder { color: var(--text-muted); }
+
+/* Tabs */
+.obj-picker-tabs {
+  display: flex; gap: 0;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.obj-picker-tab {
+  background: none; border: none; cursor: pointer;
+  padding: 7px 10px; font-size: 0.82rem;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.obj-picker-tab:hover { color: var(--text); }
+.obj-picker-tab--active { color: var(--blue); font-weight: 600; border-bottom-color: var(--blue); }
+
+/* Scrollable item list */
+.obj-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 200px;
+  padding: 4px 0;
+}
+.obj-picker-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 14px; cursor: pointer;
+  font-size: 0.84rem; color: var(--text);
+  user-select: none;
+  transition: background 0.1s;
+}
+.obj-picker-item:hover { background: #f1f5f9; }
+.obj-picker-item input[type="checkbox"] { flex-shrink: 0; cursor: pointer; }
+.obj-picker-item-icon { display: flex; align-items: center; color: var(--text-secondary); flex-shrink: 0; }
+.obj-picker-item-icon img { width: 16px; height: 16px; object-fit: contain; border-radius: 2px; display: block; }
+.obj-picker-item-name { flex: 1; }
+.obj-picker-item-type { font-size: 0.74rem; color: var(--text-muted); white-space: nowrap; }
+
+/* "Any" special row */
+.obj-picker-any { font-style: italic; color: var(--text-secondary); }
+.obj-picker-any-star { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+
+.obj-picker-empty  { padding: 12px 14px; font-size: 0.83rem; color: var(--text-muted); }
+.obj-picker-loading { padding: 14px; display: flex; align-items: center; gap: 8px; font-size: 0.83rem; color: var(--text-muted); }
+
+/* Count */
+.obj-picker-count {
+  padding: 2px 14px 4px;
+  font-size: 0.76rem; color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* Selected items panel */
+.obj-picker-selected-hdr {
+  padding: 5px 14px 3px;
+  font-size: 0.76rem; font-weight: 600; color: var(--blue);
+}
+.obj-picker-selected-body {
+  min-height: 36px;
+  padding: 4px 14px 6px;
+  border-bottom: 1px solid var(--border);
+}
+.obj-picker-selected-empty { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+.obj-picker-selected-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* Footer */
+.obj-picker-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px;
+  gap: 8px;
+}
+.obj-picker-negate {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;
+  user-select: none;
+}
+.obj-picker-footer-actions { display: flex; gap: 6px; }

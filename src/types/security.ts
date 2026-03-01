@@ -48,6 +48,8 @@ export interface FirewallRule {
   zone?: string;
   /** RULE_ORIGIN.MANUAL | RULE_ORIGIN.GENERATED | RULE_ORIGIN.SMP_PRE | … */
   origin?: string;
+  /** Section index (integer) — groups rules into numbered sections within a zone+origin. */
+  sectionIdx?: number;
   /** Fractional ordering index within the section (zone + origin). */
   idx?: number;
   /** Gateway source table name (e.g. 'fwRule', 'fwGeneratedRule') — needed for destroy. */
